@@ -29,7 +29,8 @@ export type AuditAction =
   | "ai.decision"
   | "ai.refused"
   | "export.created"
-  | "rate_limit.tripped";
+  | "rate_limit.tripped"
+  | "daily_digest.created";
 
 export interface AuditInput {
   action: AuditAction;
