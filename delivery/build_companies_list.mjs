@@ -123,17 +123,35 @@ const data = await res.json();
 const companies = data.items ?? [];
 console.log(`Received ${companies.length} companies`);
 
-// Filter: only keep entries that look like real companies (reject the
-// noisy fragment captures the entity extractor occasionally surfaces)
+// Stricter quality filter for the deliverable. The entity extractor in the
+// backend is tuned for recall so analysts can see the full picture; this
+// deliverable is tuned for precision so only names that clearly look like
+// real companies reach the Ministry.
 function looksLikeRealCompany(name) {
-  if (!name || name.length < 2) return false;
+  if (!name || name.length < 3) return false;
   const trimmed = name.trim();
-  if (trimmed === trimmed.toLowerCase()) return false; // all-lowercase means fragment
-  if (/^(?:the|a|an|this|that|these|some|new|existing)\s/i.test(trimmed)) return false;
-  if (/\b(?:round|funding|investment|raised|series|led by|billion|million)\b/i.test(trimmed)) return false;
+  // All-lowercase = fragment (real names have Title Case)
+  if (trimmed === trimmed.toLowerCase()) return false;
+  // Starts with an article or determiner = fragment
+  if (/^(?:the|a|an|this|that|these|those|some|new|existing|several|other)\s/i.test(trimmed)) return false;
+  // Contains finance-verb noise = fragment
+  if (/\b(?:round|funding|investment|raised|raises|series|led\s+by|billion|million|backed|secures?)\b/i.test(trimmed)) return false;
+  // Contains generic phrases that aren't company names
+  if (/\b(?:projects?|market|sector|industry|ecosystem|region|economy)\b/i.test(trimmed)) return false;
   const words = trimmed.split(/\s+/);
   if (words.length > 6) return false;
-  if (words.length === 1 && words[0].length <= 2) return false;
+  // Single-token short names like "UAE", "AI" (two-letter uppercase) are locations/acronyms
+  if (words.length === 1 && words[0].length <= 3) return false;
+  // First word must start with uppercase
+  if (!/^[A-Z]/.test(words[0])) return false;
+  // Reject pure location names
+  const lowered = trimmed.toLowerCase();
+  const locations = [
+    'united arab emirates', 'abu dhabi', 'dubai', 'saudi arabia', 'riyadh',
+    'qatar', 'doha', 'kuwait', 'bahrain', 'oman', 'egypt', 'jordan',
+    'united states', 'united kingdom', 'singapore', 'india', 'china',
+  ];
+  if (locations.includes(lowered)) return false;
   return true;
 }
 
