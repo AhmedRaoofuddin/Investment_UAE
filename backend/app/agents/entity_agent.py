@@ -219,6 +219,13 @@ class EntityAgent:
         # Verbs/fragments from the remaining mis-captures
         "form", "footprint", "port", "legend", "lendtech",
         "sqm", "said", "they", "are",
+        # Additional function-words that leak into multi-word captures
+        # from news headlines ("CoinMarketCap page going live without any",
+        # "Long time", "Much more", etc.)
+        "page", "going", "live", "without", "any", "time", "later",
+        "week", "year", "month", "day", "ago", "much", "many", "every",
+        "most", "less", "more", "next", "last", "good", "better", "best",
+        "great", "huge", "quick", "quickly", "fast", "soon",
     }
 
     _STOPWORD_STARTS = {

@@ -146,6 +146,13 @@ def _merge_snapshots(
     companies = [c for c in companies if any(
         (s.detected_at is None or s.detected_at >= cutoff) for s in c.signals
     )]
+    # Re-apply the current fragment filter to every surviving company,
+    # including those carried over from an older cache. This ensures that
+    # tightening the filter retroactively cleans previously accepted noise
+    # (e.g. "a strategic", "the uae property market") the next time the
+    # pipeline runs, instead of waiting for the 30-day expiry.
+    from app.agents.entity_agent import EntityAgent
+    companies = [c for c in companies if EntityAgent._looks_like_company_name(c.name)]
     companies.sort(
         key=lambda c: (c.investability_score + c.uae_alignment_score) / 2,
         reverse=True,

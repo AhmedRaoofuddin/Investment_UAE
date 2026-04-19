@@ -1,0 +1,442 @@
+[
+  {
+    "section": "mena_tech_business",
+    "name": "Wamda",
+    "url": "https://www.wamda.com/feed",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "MENAbytes",
+    "url": "https://www.menabytes.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "MAGNiTT",
+    "url": "https://www.magnitt.com/feed",
+    "feedStatus": 200,
+    "sampleStatus": "parse-fail: Attribute without value\nLine: 6\nColumn: ",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Arabian Business",
+    "url": "https://www.arabianbusiness.com/feed",
+    "feedStatus": 403,
+    "sampleStatus": null,
+    "verdict": "REJECT"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Khaleej Times Business",
+    "url": "https://www.khaleejtimes.com/rss/business",
+    "feedStatus": 200,
+    "sampleStatus": "parse-fail: Feed not recognized as RSS 1 or 2.",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Gulf Today Business",
+    "url": "https://www.gulftoday.ae/rss/business",
+    "feedStatus": 200,
+    "sampleStatus": "parse-fail: Attribute without value\nLine: 1\nColumn: ",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "The National · Business Economy",
+    "url": "https://www.thenationalnews.com/arc/outboundfeeds/rss/category/business/economy/?outputType=xml",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "The National · Business Property",
+    "url": "https://www.thenationalnews.com/arc/outboundfeeds/rss/category/business/property/?outputType=xml",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "The National · Business Money",
+    "url": "https://www.thenationalnews.com/arc/outboundfeeds/rss/category/business/money/?outputType=xml",
+    "feedStatus": 200,
+    "sampleStatus": "1/1",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "AGBI · Arab Gulf Business Insight",
+    "url": "https://www.agbi.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Fast Company Middle East",
+    "url": "https://fastcompanyme.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Economy Middle East",
+    "url": "https://economymiddleeast.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "TRENDS MENA",
+    "url": "https://www.trendsmena.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Dubai Chronicle",
+    "url": "https://dubaichronicle.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Dubai Week",
+    "url": "https://www.dubaiweek.ae/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Zawya MENA",
+    "url": "https://www.zawya.com/en/rssfeed/mena",
+    "feedStatus": 404,
+    "sampleStatus": null,
+    "verdict": "REJECT"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Zawya Deals",
+    "url": "https://www.zawya.com/en/rssfeed/deals",
+    "feedStatus": 404,
+    "sampleStatus": null,
+    "verdict": "REJECT"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Saudi Gazette Business",
+    "url": "https://saudigazette.com.sa/rss/business",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "Entrepreneur Middle East",
+    "url": "https://www.entrepreneur.com/latest.rss",
+    "feedStatus": 200,
+    "sampleStatus": "parse-fail: Request timed out after 12000ms",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "mena_tech_business",
+    "name": "The Peninsula Qatar Business",
+    "url": "https://thepeninsulaqatar.com/rss/business",
+    "feedStatus": 200,
+    "sampleStatus": "parse-fail: Unable to parse XML.",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "TechCrunch",
+    "url": "https://techcrunch.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "TechCrunch Startups",
+    "url": "https://techcrunch.com/category/startups/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "Sifted",
+    "url": "https://sifted.eu/feed",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "Crunchbase News",
+    "url": "https://news.crunchbase.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "VentureBeat",
+    "url": "https://venturebeat.com/feed",
+    "feedStatus": 200,
+    "sampleStatus": "0/2",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "VentureBeat AI",
+    "url": "https://venturebeat.com/category/ai/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "0/2",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "EU-Startups",
+    "url": "https://www.eu-startups.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "0/2",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "Tech.eu",
+    "url": "https://tech.eu/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "TechWire Asia",
+    "url": "https://techwireasia.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "The Block (crypto)",
+    "url": "https://www.theblock.co/rss.xml",
+    "feedStatus": 403,
+    "sampleStatus": null,
+    "verdict": "REJECT"
+  },
+  {
+    "section": "global_expansion_candidates",
+    "name": "PYMNTS",
+    "url": "https://www.pymnts.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "arabic_language",
+    "name": "الخليج · الاقتصاد",
+    "url": "https://www.alkhaleej.ae/rss/economy",
+    "feedStatus": 200,
+    "sampleStatus": "parse-fail: Attribute without value\nLine: 116\nColumn",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "arabic_language",
+    "name": "BBC عربي · الاقتصاد",
+    "url": "https://feeds.bbci.co.uk/arabic/business/rss.xml",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "arabic_language",
+    "name": "الوطن السعودية · اقتصاد",
+    "url": "https://www.alwatan.com.sa/rss/economy",
+    "feedStatus": 200,
+    "sampleStatus": "parse-fail: Unexpected close tag\nLine: 81\nColumn: 7\n",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "arabic_language",
+    "name": "اليوم السابع · أعمال",
+    "url": "https://www.youm7.com/rss/SectionRss?SectionID=297",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "arabic_language",
+    "name": "الشرق الأوسط",
+    "url": "https://aawsat.com/feed",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "arabic_language",
+    "name": "سبوتنيك عربي",
+    "url": "https://arabic.sputniknews.com/export/rss2/archive/index.xml",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "Finextra",
+    "url": "https://www.finextra.com/rss/headlines.aspx",
+    "feedStatus": 200,
+    "sampleStatus": "0/2",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "CleanTechnica",
+    "url": "https://cleantechnica.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "FreightWaves",
+    "url": "https://www.freightwaves.com/news/feed",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "Supply Chain Dive",
+    "url": "https://www.supplychaindive.com/feeds/news/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "Fierce Biotech",
+    "url": "https://www.fiercebiotech.com/rss.xml",
+    "feedStatus": 200,
+    "sampleStatus": "0/2",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "SpaceNews",
+    "url": "https://spacenews.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "Rigzone Energy",
+    "url": "https://www.rigzone.com/news/rss/rigzone_latest.aspx",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "sector_specialists",
+    "name": "Skift · Travel & Hospitality",
+    "url": "https://www.skift.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "interviews",
+    "name": "a16z Podcast",
+    "url": "https://feeds.simplecast.com/JGE3yC0V",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "interviews",
+    "name": "AGBI · Interviews and Analysis",
+    "url": "https://www.agbi.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "interviews",
+    "name": "Y Combinator · Blog and Conversations",
+    "url": "https://www.ycombinator.com/blog/rss",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "interviews",
+    "name": "StrictlyVC",
+    "url": "https://www.strictlyvc.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "interviews",
+    "name": "Decoder with Nilay Patel",
+    "url": "https://feeds.megaphone.fm/recodedecode",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "financial_announcements",
+    "name": "Business Wire · Headlines",
+    "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeGVtRXA==",
+    "feedStatus": 200,
+    "sampleStatus": "no-items",
+    "verdict": "REJECT"
+  },
+  {
+    "section": "financial_announcements",
+    "name": "PR Newswire · All Releases",
+    "url": "https://www.prnewswire.com/rss/news-releases-list.rss",
+    "feedStatus": 0,
+    "sampleStatus": null,
+    "verdict": "REJECT"
+  },
+  {
+    "section": "financial_announcements",
+    "name": "GlobeNewswire · Public Company News",
+    "url": "https://www.globenewswire.com/RssFeed/subjectcode/9-Public%20Company%20News/feedTitle/GlobeNewswire%20-%20Public%20Company%20News",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "financial_announcements",
+    "name": "Nasdaq · Press Releases",
+    "url": "https://www.nasdaq.com/feed/rssoutbound?category=Press-Releases",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  },
+  {
+    "section": "financial_announcements",
+    "name": "PYMNTS · Fintech News",
+    "url": "https://www.pymnts.com/feed/",
+    "feedStatus": 200,
+    "sampleStatus": "2/2",
+    "verdict": "KEEP"
+  }
+]

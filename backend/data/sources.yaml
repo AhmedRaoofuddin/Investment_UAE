@@ -1,13 +1,10 @@
 # ──────────────────────────────────────────────────────────────────────────
 # RSS / Atom feed sources for investment-signal scanning.
 #
-# All entries are DIRECT publisher feeds — Google News RSS entries were
-# removed in Apr 2026 because their article URLs (news.google.com/rss/
-# articles/CBMi…) started returning HTTP 400 server-side after Google's
-# 2024 change to article-ID resolution, which meant we could never fetch
-# og:image for those signals. Direct feeds either (a) embed images via
-# media:content/media:thumbnail/enclosure, or (b) expose og:image on
-# their article pages which our rss_aggregator enrichment step scrapes.
+# Every feed listed here was probed end-to-end from a user-location browser:
+# feed URL responds 200, feed parses, and sample article URLs resolve.
+# Sources that failed reachability were removed to protect the integrity
+# of signal-card source links surfaced to analysts.
 #
 # Curated for MENA region + global expansion candidates. Weight drives
 # the scoring bias; tags are informational for filtering downstream.
@@ -17,298 +14,287 @@ mena_tech_business:
   - name: Wamda
     url: https://www.wamda.com/feed
     region: MENA
-    weight: 1.0
-    tags: [startups, funding, venture]
+    weight: 1
+    tags:
+      - startups
+      - funding
+      - venture
   - name: MENAbytes
     url: https://www.menabytes.com/feed/
     region: MENA
     weight: 0.95
-    tags: [startups, tech]
-  - name: MAGNiTT
-    url: https://www.magnitt.com/feed
-    region: MENA
-    weight: 1.0
-    tags: [startups, funding, mena-vc]
-  - name: Arabian Business
-    url: https://www.arabianbusiness.com/feed
-    region: GCC
-    weight: 0.9
-    tags: [business, finance, real-estate]
-  - name: Khaleej Times Business
-    url: https://www.khaleejtimes.com/rss/business
-    region: UAE
-    weight: 0.95
-    tags: [uae, business]
-  - name: Gulf Today Business
-    url: https://www.gulftoday.ae/rss/business
-    region: UAE
-    weight: 0.9
-    tags: [uae, business]
+    tags:
+      - startups
+      - tech
   - name: The National · Business Economy
     url: https://www.thenationalnews.com/arc/outboundfeeds/rss/category/business/economy/?outputType=xml
     region: UAE
-    weight: 1.0
-    tags: [uae, economy, business]
+    weight: 1
+    tags:
+      - uae
+      - economy
+      - business
   - name: The National · Business Property
     url: https://www.thenationalnews.com/arc/outboundfeeds/rss/category/business/property/?outputType=xml
     region: UAE
     weight: 0.9
-    tags: [uae, property, real-estate]
+    tags:
+      - uae
+      - property
+      - real-estate
   - name: The National · Business Money
     url: https://www.thenationalnews.com/arc/outboundfeeds/rss/category/business/money/?outputType=xml
     region: UAE
     weight: 0.9
-    tags: [uae, finance]
+    tags:
+      - uae
+      - finance
   - name: AGBI · Arab Gulf Business Insight
     url: https://www.agbi.com/feed/
     region: GCC
     weight: 0.95
-    tags: [gcc, business, investment]
+    tags:
+      - gcc
+      - business
+      - investment
   - name: Fast Company Middle East
     url: https://fastcompanyme.com/feed/
     region: MENA
     weight: 0.85
-    tags: [innovation, tech]
+    tags:
+      - innovation
+      - tech
   - name: Economy Middle East
     url: https://economymiddleeast.com/feed/
     region: MENA
     weight: 0.8
-    tags: [economy, business]
+    tags:
+      - economy
+      - business
   - name: TRENDS MENA
     url: https://www.trendsmena.com/feed/
     region: MENA
     weight: 0.85
-    tags: [mena, business, policy]
+    tags:
+      - mena
+      - business
+      - policy
   - name: Dubai Chronicle
     url: https://dubaichronicle.com/feed/
     region: UAE
     weight: 0.8
-    tags: [dubai, business]
+    tags:
+      - dubai
+      - business
   - name: Dubai Week
     url: https://www.dubaiweek.ae/feed/
     region: UAE
     weight: 0.7
-    tags: [dubai, lifestyle]
-  - name: Zawya MENA
-    url: https://www.zawya.com/en/rssfeed/mena
-    region: MENA
-    weight: 0.9
-    tags: [mena, business, finance]
-  - name: Zawya Deals
-    url: https://www.zawya.com/en/rssfeed/deals
-    region: MENA
-    weight: 1.0
-    tags: [mena, m&a, deals]
+    tags:
+      - dubai
+      - lifestyle
   - name: Saudi Gazette Business
     url: https://saudigazette.com.sa/rss/business
     region: GCC
     weight: 0.8
-    tags: [saudi, business]
-  - name: Entrepreneur Middle East
-    url: https://www.entrepreneur.com/latest.rss
-    region: MENA
-    weight: 0.8
-    tags: [startups, entrepreneur]
-  - name: The Peninsula Qatar Business
-    url: https://thepeninsulaqatar.com/rss/business
-    region: GCC
-    weight: 0.75
-    tags: [qatar, business]
-
+    tags:
+      - saudi
+      - business
 global_expansion_candidates:
   - name: TechCrunch
     url: https://techcrunch.com/feed/
     region: Global
     weight: 0.9
-    tags: [tech, startups, funding]
+    tags:
+      - tech
+      - startups
+      - funding
   - name: TechCrunch Startups
     url: https://techcrunch.com/category/startups/feed/
     region: Global
     weight: 0.9
-    tags: [startups, funding]
+    tags:
+      - startups
+      - funding
   - name: Sifted
     url: https://sifted.eu/feed
     region: EU
     weight: 0.8
-    tags: [startups, venture]
+    tags:
+      - startups
+      - venture
   - name: Crunchbase News
     url: https://news.crunchbase.com/feed/
     region: Global
     weight: 0.95
-    tags: [funding, venture, m&a]
-  - name: VentureBeat
-    url: https://venturebeat.com/feed
-    region: Global
-    weight: 0.75
-    tags: [tech, ai, enterprise]
-  - name: VentureBeat AI
-    url: https://venturebeat.com/category/ai/feed/
-    region: Global
-    weight: 0.8
-    tags: [ai]
-  - name: EU-Startups
-    url: https://www.eu-startups.com/feed/
-    region: EU
-    weight: 0.75
-    tags: [startups, eu]
+    tags:
+      - funding
+      - venture
+      - m&a
   - name: Tech.eu
     url: https://tech.eu/feed/
     region: EU
     weight: 0.8
-    tags: [startups, venture, eu]
+    tags:
+      - startups
+      - venture
+      - eu
   - name: TechWire Asia
     url: https://techwireasia.com/feed/
     region: APAC
     weight: 0.75
-    tags: [tech, asia]
-  - name: The Block (crypto)
-    url: https://www.theblock.co/rss.xml
-    region: Global
-    weight: 0.7
-    tags: [crypto, blockchain]
+    tags:
+      - tech
+      - asia
   - name: PYMNTS
     url: https://www.pymnts.com/feed/
     region: Global
     weight: 0.7
-    tags: [payments, fintech]
-
+    tags:
+      - payments
+      - fintech
 arabic_language:
-  - name: الخليج · الاقتصاد
-    url: https://www.alkhaleej.ae/rss/economy
-    region: UAE
-    weight: 1.0
-    tags: [uae, arabic, economy]
   - name: BBC عربي · الاقتصاد
     url: https://feeds.bbci.co.uk/arabic/business/rss.xml
     region: MENA
     weight: 0.95
-    tags: [arabic, economy, international]
-  - name: الوطن السعودية · اقتصاد
-    url: https://www.alwatan.com.sa/rss/economy
-    region: GCC
-    weight: 0.9
-    tags: [saudi, arabic, economy]
+    tags:
+      - arabic
+      - economy
+      - international
   - name: اليوم السابع · أعمال
     url: https://www.youm7.com/rss/SectionRss?SectionID=297
     region: MENA
     weight: 0.85
-    tags: [egypt, arabic, business]
+    tags:
+      - egypt
+      - arabic
+      - business
   - name: الشرق الأوسط
     url: https://aawsat.com/feed
     region: MENA
     weight: 0.9
-    tags: [arabic, pan-arab, business]
+    tags:
+      - arabic
+      - pan-arab
+      - business
   - name: سبوتنيك عربي
     url: https://arabic.sputniknews.com/export/rss2/archive/index.xml
     region: MENA
     weight: 0.75
-    tags: [arabic, mena]
-
+    tags:
+      - arabic
+      - mena
 sector_specialists:
-  - name: Finextra
-    url: https://www.finextra.com/rss/headlines.aspx
-    region: Global
-    weight: 0.85
-    tags: [fintech, banking]
   - name: CleanTechnica
     url: https://cleantechnica.com/feed/
     region: Global
     weight: 0.8
-    tags: [cleantech, energy, sustainability]
+    tags:
+      - cleantech
+      - energy
+      - sustainability
   - name: FreightWaves
     url: https://www.freightwaves.com/news/feed
     region: Global
     weight: 0.75
-    tags: [logistics, supply-chain]
+    tags:
+      - logistics
+      - supply-chain
   - name: Supply Chain Dive
     url: https://www.supplychaindive.com/feeds/news/
     region: Global
     weight: 0.75
-    tags: [logistics, supply-chain]
-  - name: Fierce Biotech
-    url: https://www.fiercebiotech.com/rss.xml
-    region: Global
-    weight: 0.75
-    tags: [biotech, healthcare]
+    tags:
+      - logistics
+      - supply-chain
   - name: SpaceNews
     url: https://spacenews.com/feed/
     region: Global
     weight: 0.7
-    tags: [space, aerospace]
+    tags:
+      - space
+      - aerospace
   - name: Rigzone Energy
     url: https://www.rigzone.com/news/rss/rigzone_latest.aspx
     region: Global
     weight: 0.7
-    tags: [energy, oil-gas]
+    tags:
+      - energy
+      - oil-gas
   - name: Skift · Travel & Hospitality
     url: https://www.skift.com/feed/
     region: Global
     weight: 0.75
-    tags: [tourism, hospitality, travel]
-
-# ──────────────────────────────────────────────────────────────────────────
-# Founder / executive interviews. Publisher feeds and podcast feeds that
-# regularly surface founder commentary on expansion intent, funding plans
-# and regional strategy. The entity extractor treats interview transcripts
-# the same way it treats news articles. Every URL below was probed live
-# and verified to return 200 with a standard browser User-Agent.
-# ──────────────────────────────────────────────────────────────────────────
+    tags:
+      - tourism
+      - hospitality
+      - travel
 interviews:
   - name: a16z Podcast
     url: https://feeds.simplecast.com/JGE3yC0V
     region: Global
     weight: 0.8
-    tags: [interviews, vc, tech, podcast]
+    tags:
+      - interviews
+      - vc
+      - tech
+      - podcast
   - name: AGBI · Interviews and Analysis
     url: https://www.agbi.com/feed/
     region: GCC
     weight: 0.9
-    tags: [interviews, gcc, business]
+    tags:
+      - interviews
+      - gcc
+      - business
   - name: Y Combinator · Blog and Conversations
     url: https://www.ycombinator.com/blog/rss
     region: Global
     weight: 0.85
-    tags: [interviews, yc, founders, startup]
+    tags:
+      - interviews
+      - yc
+      - founders
+      - startup
   - name: StrictlyVC
     url: https://www.strictlyvc.com/feed/
     region: Global
     weight: 0.85
-    tags: [interviews, vc, founders]
+    tags:
+      - interviews
+      - vc
+      - founders
   - name: Decoder with Nilay Patel
     url: https://feeds.megaphone.fm/recodedecode
     region: Global
     weight: 0.8
-    tags: [interviews, tech, podcast]
-
-# ──────────────────────────────────────────────────────────────────────────
-# Primary financial announcements. Press wires and official disclosures.
-# Higher-signal than news-wire coverage because they are filed by the
-# company itself and therefore name the action precisely. Every URL
-# below was probed live and verified to return 200.
-# ──────────────────────────────────────────────────────────────────────────
+    tags:
+      - interviews
+      - tech
+      - podcast
 financial_announcements:
-  - name: Business Wire · Headlines
-    url: https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeGVtRXA==
-    region: Global
-    weight: 0.85
-    tags: [press-release, wire]
-  - name: PR Newswire · All Releases
-    url: https://www.prnewswire.com/rss/news-releases-list.rss
-    region: Global
-    weight: 0.85
-    tags: [press-release, wire]
   - name: GlobeNewswire · Public Company News
     url: https://www.globenewswire.com/RssFeed/subjectcode/9-Public%20Company%20News/feedTitle/GlobeNewswire%20-%20Public%20Company%20News
     region: Global
     weight: 0.85
-    tags: [press-release, wire, public-companies]
+    tags:
+      - press-release
+      - wire
+      - public-companies
   - name: Nasdaq · Press Releases
     url: https://www.nasdaq.com/feed/rssoutbound?category=Press-Releases
     region: Global
     weight: 0.85
-    tags: [press-release, nasdaq, listed-companies]
+    tags:
+      - press-release
+      - nasdaq
+      - listed-companies
   - name: PYMNTS · Fintech News
     url: https://www.pymnts.com/feed/
     region: Global
     weight: 0.8
-    tags: [press-release, fintech, payments]
+    tags:
+      - press-release
+      - fintech
+      - payments
