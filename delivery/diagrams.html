@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 40px; font-family: 'Segoe UI', sans-serif; background: white; }
+  .diagram { margin-bottom: 80px; }
+  h2 { font-family: Calibri, sans-serif; color: #0E1E3F; margin-bottom: 16px; font-size: 20px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+<div class="diagram" id="d1">
+<pre class="mermaid">
+classDiagram
+    direction LR
+
+    class PipelineOrchestrator {
+        +run_pipeline() CompanySnapshot
+        -_filter_articles(articles)
+        -_classify(articles)
+        -_extract(articles)
+        -_aggregate(signals)
+        -_score(companies)
+        -_merge_snapshots(prev, curr)
+    }
+
+    class EmbeddingAgent {
+        +MODEL_NAME: str
+        -_model
+        -_cache: Dict
+        +encode(text) ndarray
+        +encode_batch(texts) ndarray
+        +relevance_score(text) float
+        -_hash_encode(texts) ndarray
+    }
+
+    class ClassifierAgent {
+        +classify(text) SignalClassification
+        +classify_batch(texts) List
+        +is_investment_signal(text, threshold) bool
+        -_keyword_classify(text) Dict
+        -_embedding_classify(text) Dict
+        -_assess_strength(text, type) str
+    }
+
+    class EntityAgent {
+        +extract(title, text) List~ExtractedEntity~
+        +extract_funding(text) float
+        +extract_locations(text) Tuple
+        +extract_company_names(text) List
+        +infer_headquarters(text, cities, countries)
+        -_looks_like_company_name(name) bool$
+    }
+
+    class ScoringAgent {
+        +score(signals, sectors, hq, targets, funding, description) CompanyScores
+        +score_batch(companies) List
+        -_score_investability(...) Tuple
+        -_score_alignment(...) Tuple
+        -_generate_thesis(...) str
+    }
+
+    class SignalClassification {
+        +signal_type: str
+        +confidence: float
+        +strength: str
+        +all_scores: Dict
+    }
+
+    class ExtractedEntity {
+        +name: str
+        +aliases: List
+        +headquarters_country: str
+        +expansion_countries: List
+        +funding_usd: float
+        +executives: List
+    }
+
+    class CompanyScores {
+        +investability_score: float
+        +uae_alignment_score: float
+        +composite_score: float
+        +investability_breakdown: Dict
+        +alignment_breakdown: Dict
+        +thesis_snippet: str
+    }
+
+    PipelineOrchestrator --> EmbeddingAgent
+    PipelineOrchestrator --> ClassifierAgent
+    PipelineOrchestrator --> EntityAgent
+    PipelineOrchestrator --> ScoringAgent
+    ClassifierAgent --> EmbeddingAgent
+    ScoringAgent --> EmbeddingAgent
+    ClassifierAgent ..> SignalClassification : returns
+    EntityAgent ..> ExtractedEntity : returns
+    ScoringAgent ..> CompanyScores : returns
+</pre>
+</div>
+
+<div class="diagram" id="d2">
+<pre class="mermaid">
+classDiagram
+    direction LR
+
+    class SanctionsScreen {
+        +entries: List~dict~
+        +pep_titles: Set
+        +screen(needle) List~SanctionsHit~
+        +is_blocked(needle) bool
+        -_normalised_index() List
+    }
+
+    class InjectionGuard {
+        +rules: Dict
+        +scan(text) List~InjectionFinding~
+        +is_safe(text) bool
+    }
+
+    class PIIRedactor {
+        +patterns: List
+        +redact(text) RedactionResult
+    }
+
+    class RegulatedActivityGuard {
+        +patterns: List
+        +evaluate(prompt) RefusalDecision
+    }
+
+    class SanctionsHit {
+        +name: str
+        +matched_term: str
+        +list_name: str
+        +program: str
+        +entity_type: str
+        +confidence: float
+        +rationale: str
+    }
+
+    class InjectionFinding {
+        +category: str
+        +pattern: str
+        +snippet: str
+    }
+
+    class RedactionResult {
+        +text: str
+        +redactions: Dict
+        +redacted_count: int
+    }
+
+    class RefusalDecision {
+        +refuse: bool
+        +category: str
+        +matched: str
+    }
+
+    SanctionsScreen ..> SanctionsHit : returns
+    InjectionGuard ..> InjectionFinding : returns
+    PIIRedactor ..> RedactionResult : returns
+    RegulatedActivityGuard ..> RefusalDecision : returns
+</pre>
+</div>
+
+<div class="diagram" id="d3">
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant RSS as RSS Aggregator
+    participant ENT as EntityAgent
+    participant CLS as ClassifierAgent
+    participant SAF as Safety Gate
+    participant SCR as ScoringAgent
+    participant CCH as Pipeline Cache
+    participant API as FastAPI Router
+    participant UI as Next.js Frontend
+
+    RSS->>RSS: Fetch 24 feeds in parallel (asyncio)
+    RSS->>RSS: Dedupe by URL hash
+    RSS->>RSS: Enrich og:image (UA rotation)
+    RSS->>ENT: raw articles
+    ENT->>ENT: Regex + gazetteer extraction
+    ENT->>ENT: Fragment filter
+    ENT->>CLS: article and candidate entities
+    CLS->>CLS: Embedding similarity (60%)
+    CLS->>CLS: Keyword regex (40%)
+    CLS->>SAF: classified signal
+    SAF->>SAF: Sanctions and PEP screen
+    SAF->>SAF: Prompt-injection scan
+    SAF->>SAF: PII redaction
+    SAF->>SAF: Regulated-activity refusal
+    SAF->>SCR: cleared signal
+    SCR->>SCR: Investability score (0-100)
+    SCR->>SCR: UAE alignment score (0-100)
+    SCR->>CCH: scored company
+    CCH->>CCH: Additive merge with prior snapshot
+    API->>CCH: GET /api/companies
+    CCH-->>API: cached snapshot (6h TTL)
+    API-->>UI: JSON response
+    UI-->>UI: Render signal feed
+</pre>
+</div>
+
+<div class="diagram" id="d4">
+<pre class="mermaid">
+graph TB
+    subgraph Client[Client browser]
+        UI[Next.js 16 frontend<br/>React 19, Tailwind 4]
+    end
+
+    subgraph EdgeFr[Vercel Edge - Frankfurt]
+        MW[middleware.ts<br/>CSP nonce, HSTS, rate limit]
+        AUTH[Auth.js v5<br/>bcrypt, DB sessions]
+        PROXY[/api/proxy]
+    end
+
+    subgraph BackendFr[Vercel Python - Frankfurt]
+        FASTAPI[FastAPI router]
+        ORCH[Pipeline Orchestrator]
+        AGENTS[5 ML agents]
+        SAFETY[4 safety modules]
+        CACHE[Disk JSON cache]
+    end
+
+    subgraph DataFr[eu-central-1 Frankfurt]
+        NEON[(Neon Postgres<br/>multi-tenant<br/>Prisma schema)]
+    end
+
+    subgraph External[External services]
+        RSS[24 RSS feeds<br/>MENA + global + Arabic]
+        CLAUDE[Anthropic Claude<br/>Opus 4.6 + Haiku 4.5]
+    end
+
+    UI -->|HTTPS + CSP| MW
+    MW --> AUTH
+    AUTH --> NEON
+    UI -->|authed| PROXY
+    PROXY --> FASTAPI
+    FASTAPI --> ORCH
+    ORCH --> AGENTS
+    ORCH --> SAFETY
+    ORCH --> CACHE
+    FASTAPI -.->|optional enrichment| CLAUDE
+    ORCH --> RSS
+
+    style UI fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style MW fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style AUTH fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style PROXY fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style FASTAPI fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style ORCH fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style AGENTS fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style SAFETY fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style CACHE fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style NEON fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style RSS fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style CLAUDE fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+</pre>
+</div>
+
+<div class="diagram" id="d5">
+<pre class="mermaid">
+erDiagram
+    Tenant ||--o{ User : owns
+    Tenant ||--o{ Connection : has
+    Tenant ||--o{ WatchlistItem : curates
+    Tenant ||--o{ Notification : receives
+    Tenant ||--o{ AuditEntry : logs
+    User ||--o{ Account : links
+    User ||--o{ Session : holds
+    Connection ||--o{ ConnectionSecret : secures
+
+    Tenant {
+        string id PK
+        string name
+        enum tier "PILOT VERIFIED INSTITUTION"
+        string region "ae-pilot"
+        string kycStatus
+        string kycProvider
+        datetime createdAt
+    }
+
+    User {
+        string id PK
+        string tenantId FK
+        string email UK
+        string passwordHash
+        string uaePassSub UK
+        enum role "OWNER MEMBER READONLY"
+        datetime lastLoginAt
+    }
+
+    Connection {
+        string id PK
+        string tenantId FK
+        string provider
+        enum kind "MCP OAUTH APIKEY"
+        enum status "PENDING ACTIVE ERROR REVOKED"
+        json config
+        datetime lastSyncAt
+    }
+
+    ConnectionSecret {
+        string id PK
+        string connectionId FK
+        string kind
+        bytes ciphertext "AES-256-GCM"
+        bytes iv
+        bytes authTag
+        datetime expiresAt
+    }
+
+    WatchlistItem {
+        string id PK
+        string tenantId FK
+        enum kind "COMPANY SECTOR REGION KEYWORD"
+        string value
+        string label
+        json routes
+    }
+
+    Notification {
+        string id PK
+        string tenantId FK
+        string userId FK
+        enum severity "INFO ALERT CRITICAL"
+        enum status "UNREAD READ ARCHIVED"
+        string title
+        text body
+        string sourceKind
+        string sourceId
+    }
+
+    AuditEntry {
+        string id PK
+        string tenantId FK
+        string userId FK
+        string action
+        string subject
+        json meta
+        string ip
+        string userAgent
+        datetime createdAt
+    }
+
+    Account {
+        string id PK
+        string userId FK
+        string provider
+        string providerAccountId
+        text access_token
+        text refresh_token
+    }
+
+    Session {
+        string id PK
+        string sessionToken UK
+        string userId FK
+        datetime expires
+    }
+</pre>
+</div>
+
+<div class="diagram" id="d7">
+<pre class="mermaid">
+graph TB
+    subgraph EdgeTier[Edge tier]
+        VPOP[Vercel Edge POP<br/>fra1 Frankfurt]
+        CDN[Next.js static assets<br/>images, fonts, brand]
+    end
+
+    subgraph AppTier[Application tier]
+        NEXT[Next.js serverless<br/>App Router]
+        FAST[FastAPI serverless<br/>Python 3.12]
+        MWARE[middleware.ts<br/>CSP, HSTS, rate limit]
+    end
+
+    subgraph DataTier[Data tier]
+        NEON[(Neon Postgres<br/>eu-central-1 Frankfurt)]
+        CACHE[Vercel /tmp<br/>pipeline snapshot JSON]
+    end
+
+    subgraph Clients[Clients]
+        ANALYST[Analyst browser<br/>signed in]
+        PUBLIC[Public browser]
+    end
+
+    subgraph External[External services]
+        RSS24[24 RSS feeds]
+        ANTHROPIC[Anthropic Claude API]
+    end
+
+    ANALYST -->|HTTPS| VPOP
+    PUBLIC -->|HTTPS| VPOP
+    VPOP --> CDN
+    VPOP --> MWARE
+    MWARE --> NEXT
+    NEXT --> FAST
+    NEXT --> NEON
+    FAST --> NEON
+    FAST --> CACHE
+    FAST -->|bounded concurrency| RSS24
+    FAST -.->|audited chokepoint| ANTHROPIC
+
+    style VPOP fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style CDN fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style NEXT fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style FAST fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style MWARE fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style NEON fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style CACHE fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style ANALYST fill:#F1EDE2,stroke:#0E1E3F,color:#0E1E3F
+    style PUBLIC fill:#F1EDE2,stroke:#0E1E3F,color:#0E1E3F
+    style RSS24 fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style ANTHROPIC fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+</pre>
+</div>
+
+<div class="diagram" id="d8">
+<pre class="mermaid">
+graph LR
+    subgraph Actors[Actors]
+        A1((Ministry<br/>analyst))
+        A2((Public<br/>visitor))
+        A3((Ops and<br/>auditor))
+        A4((External<br/>system))
+    end
+
+    subgraph UseCases[Use cases]
+        U1[Browse ranked<br/>company pipeline]
+        U2[View signal feed]
+        U3[Inspect company dossier]
+        U4[Review geo intelligence]
+        U5[Maintain watchlist]
+        U6[Connect downstream tool]
+        U7[Receive matched notification]
+        U8[Summarise watchlist with AI]
+        U9[Review audit log]
+        U10[Export dashboard data]
+        U11[Sign in and manage session]
+        U12[Force pipeline refresh]
+    end
+
+    A1 --> U1
+    A1 --> U2
+    A1 --> U3
+    A1 --> U4
+    A1 --> U5
+    A1 --> U6
+    A1 --> U7
+    A1 --> U8
+    A1 --> U11
+    A1 --> U12
+    A2 --> U1
+    A2 --> U2
+    A2 --> U3
+    A2 --> U4
+    A3 --> U9
+    A4 --> U7
+    A4 --> U10
+
+    style A1 fill:#0E1E3F,stroke:#0E1E3F,color:white
+    style A2 fill:#1B4F72,stroke:#0E1E3F,color:white
+    style A3 fill:#7B2D8E,stroke:#0E1E3F,color:white
+    style A4 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+</pre>
+</div>
+
+<div class="diagram" id="d9">
+<pre class="mermaid">
+stateDiagram-v2
+    [*] --> UNREAD : matched signal arrives
+    UNREAD --> READ : analyst opens
+    READ --> UNREAD : analyst marks unread
+    UNREAD --> ARCHIVED : analyst archives
+    READ --> ARCHIVED : analyst archives
+    ARCHIVED --> [*] : retention window elapsed
+
+    UNREAD --> UNREAD : bulk action (clear AI briefings<br/>or clear read)
+    READ --> READ : redelivered via channel
+</pre>
+</div>
+
+<div class="diagram" id="d10">
+<pre class="mermaid">
+flowchart LR
+    subgraph Sources[Public sources, tier 1]
+        S1[MENA direct<br/>16 feeds]
+        S2[Arabic language<br/>6 feeds]
+        S3[Global tech<br/>6 feeds]
+    end
+
+    subgraph Ingest[Ingestion]
+        I1[RSS aggregator]
+        I2[og:image enricher]
+    end
+
+    subgraph Detect[Detection]
+        D1[Entity agent]
+        D2[Classifier agent]
+        D3[Embedding agent]
+    end
+
+    subgraph Gate[Safety gate]
+        G1[Sanctions screen]
+        G2[PEP heuristic]
+        G3[Injection guard]
+        G4[PII redactor]
+        G5[Refusal guard]
+    end
+
+    subgraph Rank[Ranking]
+        R1[Scoring agent]
+        R2[Snapshot merger]
+    end
+
+    subgraph Serve[Serving]
+        V1[Pipeline cache]
+        V2[Public API]
+        V3[Workspace API]
+    end
+
+    subgraph UI[Analyst UI]
+        W1[Signal feed]
+        W2[Company dossier]
+        W3[Watchlist match]
+        W4[Notification]
+    end
+
+    S1 --> I1
+    S2 --> I1
+    S3 --> I1
+    I1 --> I2
+    I2 --> D1
+    D1 --> D2
+    D2 --> D3
+    D3 --> G1
+    G1 --> G2
+    G2 --> G3
+    G3 --> G4
+    G4 --> G5
+    G5 --> R1
+    R1 --> R2
+    R2 --> V1
+    V1 --> V2
+    V1 --> V3
+    V2 --> W1
+    V2 --> W2
+    V3 --> W3
+    V3 --> W4
+
+    style G1 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style G2 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style G3 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style G4 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style G5 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+</pre>
+</div>
+
+<div class="diagram" id="d11">
+<pre class="mermaid">
+graph TB
+    subgraph Presentation[Presentation layer]
+        P1[Next.js App Router]
+        P2[React 19 components]
+        P3[Tailwind 4]
+        P4[LocaleProvider, i18n]
+    end
+
+    subgraph Middleware[Middleware layer]
+        M1[CSP + nonce]
+        M2[Auth.js v5]
+        M3[Rate limit]
+        M4[Tenant session]
+    end
+
+    subgraph Domain[Domain layer]
+        DO1[Agents]
+        DO2[Safety taxonomy]
+        DO3[Pipeline orchestrator]
+        DO4[Connector registry]
+    end
+
+    subgraph Infra[Infrastructure layer]
+        IN1[FastAPI router]
+        IN2[Prisma ORM]
+        IN3[Audited AI client]
+        IN4[Notification channels]
+    end
+
+    subgraph Data[Data layer]
+        DA1[(Neon Postgres)]
+        DA2[Disk cache]
+        DA3[RSS feeds]
+        DA4[Claude API]
+    end
+
+    P1 --> M1
+    P2 --> P1
+    P3 --> P1
+    P4 --> P1
+    M1 --> M2
+    M2 --> M3
+    M3 --> M4
+    M4 --> IN1
+    IN1 --> DO1
+    IN1 --> DO2
+    IN1 --> DO3
+    M4 --> DO4
+    DO1 --> IN3
+    DO3 --> DO1
+    DO3 --> DO2
+    IN1 --> IN2
+    IN2 --> DA1
+    IN1 --> DA2
+    IN3 --> DA4
+    IN1 --> DA3
+    DO4 --> IN4
+
+    style DO1 fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style DO2 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style DO3 fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style DO4 fill:#F8F6EF,stroke:#0E1E3F,color:#0E1E3F
+    style IN3 fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+</pre>
+</div>
+
+<div class="diagram" id="d6">
+<pre class="mermaid">
+flowchart LR
+    A[Source article<br/>public feed] --> B{Is text<br/>safe?<br/>InjectionGuard}
+    B -->|flagged| X[Audit + drop]
+    B -->|safe| C{Is entity<br/>sanctioned?<br/>SanctionsScreen}
+    C -->|OFAC / UN / EU hit| X
+    C -->|PEP heuristic| D[Queue for EDD]
+    C -->|clean| E[Classify signal type<br/>ClassifierAgent]
+    E --> F[Extract companies, locations, funding<br/>EntityAgent]
+    F --> G[Score investability + UAE alignment<br/>ScoringAgent]
+    G --> H{PII present<br/>in output?<br/>PIIRedactor}
+    H -->|yes| I[Redact then emit]
+    H -->|no| J[Emit signal]
+    I --> K[Audit log entry<br/>hashes only]
+    J --> K
+    D --> K
+    K --> L[Surface to analyst]
+
+    style B fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style C fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style H fill:#B6925E,stroke:#0E1E3F,color:#0E1E3F
+    style X fill:#7B2D8E,stroke:#0E1E3F,color:white
+    style K fill:#1B4F72,stroke:#0E1E3F,color:white
+    style L fill:#0E1E3F,stroke:#0E1E3F,color:white
+</pre>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#F8F6EF',
+      primaryTextColor: '#0E1E3F',
+      primaryBorderColor: '#0E1E3F',
+      lineColor: '#0E1E3F',
+      secondaryColor: '#B6925E',
+      tertiaryColor: '#F1EDE2',
+      fontFamily: 'Calibri, Segoe UI, sans-serif',
+      fontSize: '15px',
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { useMaxWidth: false, boxMargin: 10, messageMargin: 35 },
+    class: { useMaxWidth: false },
+    er: { useMaxWidth: false, fontSize: 13 },
+  });
+</script>
+
+</body>
+</html>

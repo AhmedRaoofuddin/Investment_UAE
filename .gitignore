@@ -42,3 +42,10 @@ frontend/build/
 **/.next/
 backend/cache/pipeline_snapshot.json
 _diag.json
+
+# Delivery workspace: ship the finished PDFs + Word files only
+delivery/node_modules/
+delivery/package-lock.json
+delivery/companies_cover_*.jpg
+delivery/companies_p*.jpg
+delivery/update_and_export.bas
