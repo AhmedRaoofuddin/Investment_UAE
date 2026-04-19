@@ -245,3 +245,74 @@ sector_specialists:
     region: Global
     weight: 0.75
     tags: [tourism, hospitality, travel]
+
+# ──────────────────────────────────────────────────────────────────────────
+# Founder / executive interviews. Podcast and interview-publisher feeds
+# that regularly surface founder commentary on expansion intent, funding
+# plans and regional strategy. The entity extractor treats interview
+# transcripts the same way it treats news articles.
+# ──────────────────────────────────────────────────────────────────────────
+interviews:
+  - name: TechCrunch · Equity Podcast
+    url: https://feeds.megaphone.fm/equity
+    region: Global
+    weight: 0.85
+    tags: [interviews, vc, podcast, funding]
+  - name: The Twenty Minute VC (20VC)
+    url: https://20vc.libsyn.com/rss
+    region: Global
+    weight: 0.85
+    tags: [interviews, vc, founders, podcast]
+  - name: a16z Podcast
+    url: https://feeds.simplecast.com/JGE3yC0V
+    region: Global
+    weight: 0.8
+    tags: [interviews, vc, tech, podcast]
+  - name: AGBI · Interviews and Analysis
+    url: https://www.agbi.com/feed/
+    region: GCC
+    weight: 0.9
+    tags: [interviews, gcc, business]
+  - name: Bloomberg Technology Podcast
+    url: https://www.bloomberg.com/feeds/podcasts/bloomberg_technology.xml
+    region: Global
+    weight: 0.8
+    tags: [interviews, tech, podcast]
+
+# ──────────────────────────────────────────────────────────────────────────
+# Primary financial announcements. Regulatory filings, press wires and
+# official disclosures. These are higher-signal than news-wire coverage
+# because they are filed by the company itself and therefore name the
+# action precisely (e.g. an 8-K "material definitive agreement" filing).
+# ──────────────────────────────────────────────────────────────────────────
+financial_announcements:
+  - name: SEC EDGAR · 8-K Material Events
+    url: https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&output=atom
+    region: Global
+    weight: 0.95
+    tags: [filings, sec, material-event, financial]
+  - name: SEC EDGAR · 6-K Foreign Private Issuer
+    url: https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=6-K&output=atom
+    region: Global
+    weight: 0.85
+    tags: [filings, sec, foreign-issuer, financial]
+  - name: PR Newswire · All Releases
+    url: https://www.prnewswire.com/rss/news-releases-list.rss
+    region: Global
+    weight: 0.8
+    tags: [press-release, wire]
+  - name: Business Wire · Headlines
+    url: https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeGVtRXA==
+    region: Global
+    weight: 0.8
+    tags: [press-release, wire]
+  - name: GlobeNewswire · Public Companies
+    url: https://www.globenewswire.com/RssFeed/subjectcode/9-Public%20Company%20News/feedTitle/GlobeNewswire%20-%20Public%20Company%20News
+    region: Global
+    weight: 0.8
+    tags: [press-release, wire, public-companies]
+  - name: ADGM News
+    url: https://www.adgm.com/rss/news
+    region: UAE
+    weight: 0.95
+    tags: [adgm, regulatory, uae, financial]

@@ -26,6 +26,7 @@ from app.models.schemas import (
     SignalType,
 )
 from app.services.claude_signal_extractor import deep_dive_company
+from app.services.daily_digest import build_digest
 from app.services.pipeline import get_companies, run_pipeline
 from app.services.pipeline_cache import cache
 
@@ -55,6 +56,23 @@ async def refresh() -> dict:
         "started_at": started.isoformat(),
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "company_count": len(companies),
+    }
+
+
+@router.get("/digest")
+async def digest(
+    limit: int = Query(10, ge=1, le=50),
+    window_hours: int = Query(24, ge=1, le=168),
+) -> dict:
+    """Daily digest: the top-N companies seen in the rolling window,
+    ordered by composite score. Consumed by the daily cron job that
+    dispatches the digest through tenant notification channels."""
+    companies = build_digest(limit=limit, window_hours=window_hours)
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "window_hours": window_hours,
+        "count": len(companies),
+        "items": [c.model_dump(mode="json") for c in companies],
     }
 
 
