@@ -281,7 +281,13 @@ class PipelineOrchestrator:
             normalized = self._normalize_name(name)
             canonical_display = self._find_canonical(normalized, name, name_registry)
 
-            cid = self._company_id(normalized)
+            # Derive the company ID from the CANONICAL name, not the raw
+            # input. Without this step, "Homegrown Ventures has already"
+            # and "Homegrown Ventures today" each produce a distinct ID
+            # even though _find_canonical correctly maps them to the same
+            # display name. Using the canonical's normalised form as the
+            # ID seed collapses these into one row.
+            cid = self._company_id(self._normalize_name(canonical_display))
 
             if cid not in company_map:
                 # Resolve sectors

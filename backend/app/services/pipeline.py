@@ -152,7 +152,44 @@ def _merge_snapshots(
     # (e.g. "a strategic", "the uae property market") the next time the
     # pipeline runs, instead of waiting for the 30-day expiry.
     from app.agents.entity_agent import EntityAgent
+    from app.agents.orchestrator import PipelineOrchestrator
     companies = [c for c in companies if EntityAgent._looks_like_company_name(c.name)]
+
+    # De-duplicate by canonical display name. Historical runs created
+    # multiple company IDs for the same company because the ID was
+    # derived from the raw captured name (e.g. "Homegrown Ventures today"
+    # vs "Homegrown Ventures has already" both surface as "Homegrown").
+    # We now merge them by normalised display name, keeping the entry
+    # with the highest composite score and unioning their signals.
+    by_display: dict[str, Company] = {}
+    for c in companies:
+        key = PipelineOrchestrator._normalize_name(c.name)
+        existing = by_display.get(key)
+        if not existing:
+            by_display[key] = c
+            continue
+        # Merge signals (existing signal ids win on conflict)
+        sig_map: dict[str, Signal] = {s.id: s for s in existing.signals}
+        for s in c.signals:
+            sig_map.setdefault(s.id, s)
+        merged = sorted(
+            sig_map.values(),
+            key=lambda s: s.detected_at or datetime.min.replace(tzinfo=timezone.utc),
+            reverse=True,
+        )[:15]
+        # Keep the entry with the higher composite score as the base
+        existing_score = (existing.investability_score + existing.uae_alignment_score) / 2
+        c_score = (c.investability_score + c.uae_alignment_score) / 2
+        base = existing if existing_score >= c_score else c
+        base.signals = merged
+        # Accumulate aliases
+        aliases = set(existing.aliases) | set(c.aliases)
+        if existing.name != c.name:
+            aliases.add(c.name if base is existing else existing.name)
+        base.aliases = sorted(aliases)
+        by_display[key] = base
+
+    companies = list(by_display.values())
     companies.sort(
         key=lambda c: (c.investability_score + c.uae_alignment_score) / 2,
         reverse=True,

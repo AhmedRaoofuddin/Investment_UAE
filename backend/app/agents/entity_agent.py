@@ -226,6 +226,11 @@ class EntityAgent:
         "week", "year", "month", "day", "ago", "much", "many", "every",
         "most", "less", "more", "next", "last", "good", "better", "best",
         "great", "huge", "quick", "quickly", "fast", "soon",
+        # Temporal / adverbial fragments that trail after a real name
+        # when the regex greedily captures clause tail ("Homegrown
+        # Ventures today", "Homegrown Ventures has already", etc.)
+        "today", "yesterday", "tomorrow", "already", "still", "now",
+        "here", "there", "then", "once", "yet", "either",
     }
 
     _STOPWORD_STARTS = {
