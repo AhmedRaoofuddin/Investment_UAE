@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+cache/pipeline_snapshot.json
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.pytest_cache/
+notebooks/.ipynb_checkpoints/
+
+.vercel

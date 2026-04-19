@@ -1,0 +1,44 @@
+# ──────────────────────────────────────────────────────────────────
+# Repo-wide
+# ──────────────────────────────────────────────────────────────────
+.DS_Store
+*.log
+
+# ──────────────────────────────────────────────────────────────────
+# Backend — Python
+# ──────────────────────────────────────────────────────────────────
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.egg-info/
+backend/.env
+backend/cache/
+
+# ──────────────────────────────────────────────────────────────────
+# Frontend — Next.js / Node
+# ──────────────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/.turbo/
+frontend/.vercel/
+frontend/.env*.local
+frontend/.env*.production*
+frontend/next-env.d.ts
+frontend/dist/
+frontend/build/
+
+# ──────────────────────────────────────────────────────────────────
+# Extra safety — secrets + build caches + Vercel project links
+# ──────────────────────────────────────────────────────────────────
+**/.env
+**/.env.*
+!**/.env.example
+**/.vercel/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/node_modules/
+**/.next/
+backend/cache/pipeline_snapshot.json
+_diag.json

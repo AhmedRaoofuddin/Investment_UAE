@@ -1,0 +1,35 @@
+# ─── Core Framework ───
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+sse-starlette==2.2.1
+
+# ─── HTTP & Parsing ───
+httpx==0.28.1
+feedparser==6.0.11
+beautifulsoup4==4.12.3
+lxml==5.3.0
+python-dateutil==2.9.0.post0
+PyYAML==6.0.2
+
+# ─── NLP & ML Agents (Open-Source) ───
+sentence-transformers>=2.7.0
+transformers>=4.40.0
+torch>=2.2.0
+scikit-learn>=1.4.0
+numpy>=1.26.0
+
+# ─── Text Processing ───
+rapidfuzz==3.10.1
+tenacity==9.0.0
+
+# ─── Claude API (Optional Enhancement) ───
+anthropic==0.42.0
+
+# ─── Jupyter Notebooks ───
+jupyter>=1.0.0
+ipykernel>=6.29.0
+matplotlib>=3.8.0
+pandas>=2.2.0

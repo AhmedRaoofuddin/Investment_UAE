@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+notebooks/
+tests/
+requirements-dev.txt
+pytest.ini
+# Note: do NOT exclude cache/ — config.py runs CACHE_DIR.mkdir at import time
+# and Vercel's filesystem is read-only outside /tmp, so the dir must exist in
+# the bundle. The snapshot file inside it is fine to ship; it's just a stale
+# warm-start cache that gets replaced on the next /api/refresh.

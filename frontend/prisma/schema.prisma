@@ -1,0 +1,282 @@
+// Invest UAE — Investor Workspace v2 schema
+//
+// Multi-tenant by Tenant.id. Every user-owned row carries a tenantId so
+// row-level filtering is enforced at every query site (no implicit joins
+// across tenants). Vercel Postgres uses POSTGRES_PRISMA_URL for runtime
+// (pooled) and POSTGRES_URL_NON_POOLING for migrations.
+//
+// IMPORTANT: when you add a model, also add a tenantId index. Cross-tenant
+// queries are not allowed; we'd rather pay storage cost than risk a leak.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = []
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Tenants & users
+// ────────────────────────────────────────────────────────────────────────
+
+enum TenantTier {
+  PILOT
+  VERIFIED
+  INSTITUTION
+}
+
+model Tenant {
+  id          String     @id @default(cuid())
+  name        String
+  tier        TenantTier @default(PILOT)
+  // PDPL compliance fields
+  region      String     @default("ae-pilot")
+  // KYC/KYB status (filled by Sumsub callback when wired)
+  kycStatus   String?    // null | pending | verified | failed
+  kycProvider String?
+  kycRefId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  users         User[]
+  connections   Connection[]
+  notifications Notification[]
+  watchlist     WatchlistItem[]
+  auditEntries  AuditEntry[]
+
+  @@index([tier])
+}
+
+enum UserRole {
+  OWNER
+  MEMBER
+  READONLY
+}
+
+// Auth.js v5 standard models (User, Account, Session, VerificationToken)
+// extended with our tenancy + role fields.
+
+model User {
+  id            String    @id @default(cuid())
+  tenantId      String?
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  role          UserRole  @default(OWNER)
+  // bcrypt hash of the user's password. Optional so OAuth-only users
+  // (Google/UAE PASS later) don't carry an empty hash.
+  passwordHash  String?
+  // UAE PASS subject id when that provider is wired
+  uaePassSub    String?   @unique
+  createdAt     DateTime  @default(now())
+  lastLoginAt   DateTime?
+
+  tenant   Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  accounts Account[]
+  sessions Session[]
+
+  @@index([tenantId])
+}
+
+// Auth.js v5 OAuth account linkage. We deliberately keep refresh_token here
+// for first-party login (Google, UAE PASS); third-party app tokens live in
+// the encrypted Connection table, never here.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Connections (third-party data + MCP)
+// ────────────────────────────────────────────────────────────────────────
+
+enum ConnectionStatus {
+  PENDING
+  ACTIVE
+  ERROR
+  REVOKED
+}
+
+enum ConnectionKind {
+  MCP_SERVER
+  OAUTH_APP
+  API_KEY
+}
+
+// One row per tenant-provider link. The provider id (e.g. "google-drive")
+// matches an entry in lib/connections/registry.ts. Tokens are stored in the
+// encrypted ConnectionSecret table — never in plaintext on this row.
+model Connection {
+  id         String           @id @default(cuid())
+  tenantId   String
+  provider   String           // "google-drive" | "notion" | "mcp:filesystem" | ...
+  kind       ConnectionKind
+  status     ConnectionStatus @default(PENDING)
+  label      String?          // user-friendly name shown in the UI
+  // Provider-specific public config (workspace ids, scopes granted, etc.).
+  // No secrets — secrets live in ConnectionSecret.
+  config     Json?
+  lastSyncAt DateTime?
+  lastError  String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  tenant  Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  secrets ConnectionSecret[]
+
+  @@unique([tenantId, provider])
+  @@index([tenantId])
+  @@index([status])
+}
+
+// Encrypted token storage. `ciphertext` is AES-256-GCM, key derived per-tenant
+// from TOKEN_VAULT_MASTER_KEY (KMS-backed in prod). The IV + auth tag are
+// concatenated in `iv` and `authTag` fields so we can rotate the master key
+// by re-encrypting in place.
+model ConnectionSecret {
+  id           String     @id @default(cuid())
+  connectionId String
+  // "access_token" | "refresh_token" | "api_key" | "client_secret"
+  kind         String
+  ciphertext   Bytes
+  iv           Bytes
+  authTag      Bytes
+  expiresAt    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  connection Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, kind])
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Watchlist (per-tenant signal subscriptions)
+// ────────────────────────────────────────────────────────────────────────
+
+enum WatchlistItemKind {
+  COMPANY
+  SECTOR
+  REGION
+  KEYWORD
+}
+
+model WatchlistItem {
+  id        String            @id @default(cuid())
+  tenantId  String
+  kind      WatchlistItemKind
+  value     String            // company id, sector slug, region code, or keyword
+  label     String
+  // Notification routing for this item — channel ids referencing
+  // Tenant.notificationChannels. Stored as a JSON array of channel ids.
+  routes    Json?
+  createdAt DateTime          @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, kind, value])
+  @@index([tenantId])
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Notifications
+// ────────────────────────────────────────────────────────────────────────
+
+enum NotificationSeverity {
+  INFO
+  ALERT
+  CRITICAL
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+model Notification {
+  id          String               @id @default(cuid())
+  tenantId    String
+  userId      String?              // null = visible to whole tenant
+  severity    NotificationSeverity @default(INFO)
+  status      NotificationStatus   @default(UNREAD)
+  title       String
+  body        String               @db.Text
+  // Source signal id / company id / sector slug — used for deep-linking.
+  sourceKind  String?
+  sourceId    String?
+  // Channels this notification was attempted on, with success/failure.
+  // [{channel: "email", deliveredAt: "...", error: null}, ...]
+  deliveries  Json?
+  createdAt   DateTime             @default(now())
+  readAt      DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status, createdAt(sort: Desc)])
+  @@index([userId])
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Audit log (append-only)
+// ────────────────────────────────────────────────────────────────────────
+
+// Every state-changing action, every AI decision, every export. Append-only
+// by convention — no Prisma model exposes update/delete on this. Required for
+// regulated investor audience (PDPL Article 23, ADGM / DIFC procurement).
+model AuditEntry {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  userId    String?
+  // "auth.signin", "connection.created", "ai.decision", "export.created", ...
+  action    String
+  // Subject of the action (connection id, signal id, company id, ...).
+  subject   String?
+  // Free-form metadata — never include secrets here.
+  meta      Json?
+  // Network context for forensics.
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([action])
+}
