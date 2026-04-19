@@ -94,12 +94,14 @@ class PipelineOrchestrator:
     async def run(
         self,
         articles: List[SourceArticle],
-        # Lowered 0.2 → 0.12 to let more MENA articles through. Reality:
-        # our 35+ direct publisher feeds return ~800-1200 articles per
-        # pipeline run, but the 0.2 threshold was dropping ~90% of them
-        # before the classifier even saw them. 0.12 preserves ~300-400.
-        relevance_threshold: float = 0.12,
-        max_companies: int = 150,
+        # Lowered 0.12 → 0.06 to let more global-wire and deep-tech
+        # articles through. With 53 verified publisher feeds returning
+        # 1500-2000 articles per pipeline run, a higher threshold
+        # collapses the funnel too aggressively. 0.06 preserves the
+        # breadth needed to surface 200+ companies per refresh while
+        # the downstream fragment filter still removes noise.
+        relevance_threshold: float = 0.06,
+        max_companies: int = 220,
     ) -> List[Company]:
         """
         Run the full pipeline on a list of articles.
@@ -195,7 +197,7 @@ class PipelineOrchestrator:
             if article.source_region in mena_regions:
                 continue
             text = f"{article.title} {article.summary or ''}"
-            if self.classifier_agent.is_investment_signal(text, threshold=0.08):
+            if self.classifier_agent.is_investment_signal(text, threshold=0.04):
                 relevant.append(article)
 
         # Deduplicate by embedding similarity — only near-exact copy
@@ -206,7 +208,7 @@ class PipelineOrchestrator:
             unique_indices = self.embedding_agent.deduplicate(texts, threshold=0.98)
             relevant = [relevant[i] for i in unique_indices]
 
-        return relevant[:1000]  # Cap for performance — raised 600 → 1000
+        return relevant[:1800]  # Cap for performance — raised 1000 → 1800 for 200+ companies
 
     # ────────────────────────────────────────────────────────────────
     # Stage 2: Classify and Extract

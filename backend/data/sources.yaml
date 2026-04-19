@@ -273,6 +273,211 @@ interviews:
       - interviews
       - tech
       - podcast
+global_business_wires:
+  - name: BBC News · Business
+    url: https://feeds.bbci.co.uk/news/business/rss.xml
+    region: Global
+    weight: 0.85
+    tags: [business, news, international]
+  - name: CNBC · Business
+    url: https://www.cnbc.com/id/10000664/device/rss/rss.html
+    region: Global
+    weight: 0.85
+    tags: [business, markets, tech]
+  - name: Forbes · Business
+    url: https://www.forbes.com/business/feed/
+    region: Global
+    weight: 0.8
+    tags: [business, leadership, startups]
+  - name: Axios
+    url: https://www.axios.com/feeds/feed.rss
+    region: Global
+    weight: 0.8
+    tags: [business, tech, policy]
+  - name: Financial Times · Home
+    url: https://www.ft.com/rss/home
+    region: Global
+    weight: 0.9
+    tags: [finance, markets, global]
+  - name: Al Jazeera
+    url: https://www.aljazeera.com/xml/rss/all.xml
+    region: MENA
+    weight: 0.8
+    tags: [news, mena, international]
+
+deep_tech:
+  - name: The Verge
+    url: https://www.theverge.com/rss/index.xml
+    region: Global
+    weight: 0.8
+    tags: [tech, launches, products]
+  - name: Ars Technica · Business
+    url: https://feeds.arstechnica.com/arstechnica/business
+    region: Global
+    weight: 0.75
+    tags: [tech, enterprise]
+  - name: MIT Technology Review
+    url: https://www.technologyreview.com/feed/
+    region: Global
+    weight: 0.8
+    tags: [deep-tech, research, innovation]
+  - name: IEEE Spectrum
+    url: https://spectrum.ieee.org/rss
+    region: Global
+    weight: 0.75
+    tags: [deep-tech, engineering]
+  - name: ZDNet
+    url: https://www.zdnet.com/news/rss.xml
+    region: Global
+    weight: 0.7
+    tags: [enterprise, tech]
+  - name: TechCrunch · Venture
+    url: https://techcrunch.com/category/venture/feed/
+    region: Global
+    weight: 0.9
+    tags: [venture, funding, startups]
+
+high_volume_wires:
+  - name: Reuters · Business News
+    url: https://feeds.feedburner.com/reuters/businessNews
+    region: Global
+    weight: 0.9
+    tags: [business, markets, news]
+  - name: CNBC · Top News
+    url: https://www.cnbc.com/id/19746125/device/rss/rss.html
+    region: Global
+    weight: 0.85
+    tags: [business, markets]
+  - name: VentureBeat
+    url: https://feeds.feedburner.com/venturebeat/SZYF
+    region: Global
+    weight: 0.8
+    tags: [tech, startups, ai]
+  - name: Wall Street Journal · Markets
+    url: https://feeds.a.dj.com/rss/RSSMarketsMain.xml
+    region: Global
+    weight: 0.85
+    tags: [markets, finance]
+  - name: MarketWatch · Top Stories
+    url: https://feeds.content.dowjones.io/public/rss/mw_topstories
+    region: Global
+    weight: 0.8
+    tags: [markets, finance]
+  - name: Business Insider
+    url: https://www.businessinsider.com/rss
+    region: Global
+    weight: 0.75
+    tags: [business, tech]
+  - name: Seeking Alpha
+    url: https://seekingalpha.com/feed.xml
+    region: Global
+    weight: 0.75
+    tags: [markets, earnings, analysis]
+  - name: NBC News · Business
+    url: https://feeds.nbcnews.com/nbcnews/public/business
+    region: Global
+    weight: 0.7
+    tags: [business, news]
+  - name: Livemint · Markets
+    url: https://www.livemint.com/rss/markets
+    region: APAC
+    weight: 0.75
+    tags: [india, markets, business]
+  - name: The Hindu BusinessLine
+    url: https://www.thehindubusinessline.com/companies/?service=rss
+    region: APAC
+    weight: 0.75
+    tags: [india, companies, business]
+  - name: The Register
+    url: https://www.theregister.com/headlines.atom
+    region: Global
+    weight: 0.7
+    tags: [enterprise, tech]
+  - name: HackerNoon
+    url: https://hackernoon.com/feed
+    region: Global
+    weight: 0.65
+    tags: [startups, tech]
+  - name: Singularity Hub
+    url: https://singularityhub.com/feed/
+    region: Global
+    weight: 0.7
+    tags: [deep-tech, innovation]
+
+emerging_markets:
+  - name: Inc42 · India Startups
+    url: https://inc42.com/feed/
+    region: APAC
+    weight: 0.8
+    tags: [india, startups, venture]
+  - name: Rest of World
+    url: https://restofworld.org/feed/
+    region: Global
+    weight: 0.8
+    tags: [emerging-markets, tech, global-south]
+  - name: Entrepreneur
+    url: https://www.entrepreneur.com/latest.rss
+    region: Global
+    weight: 0.75
+    tags: [startups, founders]
+  - name: CoinDesk
+    url: https://www.coindesk.com/arc/outboundfeeds/rss/
+    region: Global
+    weight: 0.7
+    tags: [crypto, fintech, blockchain]
+
+vertical_press:
+  - name: Fierce Pharma
+    url: https://www.fiercepharma.com/rss.xml
+    region: Global
+    weight: 0.75
+    tags: [pharma, healthcare]
+  - name: Pharmaceutical Technology
+    url: https://www.pharmaceutical-technology.com/feed/
+    region: Global
+    weight: 0.75
+    tags: [pharma, healthcare]
+  - name: MedTech Dive
+    url: https://www.medtechdive.com/feeds/news/
+    region: Global
+    weight: 0.75
+    tags: [medtech, healthcare]
+  - name: Retail Dive
+    url: https://retaildive.com/feeds/news/
+    region: Global
+    weight: 0.7
+    tags: [retail, consumer]
+  - name: Grocery Dive
+    url: https://www.grocerydive.com/feeds/news/
+    region: Global
+    weight: 0.65
+    tags: [retail, food]
+  - name: Utility Dive
+    url: https://www.utilitydive.com/feeds/news/
+    region: Global
+    weight: 0.7
+    tags: [utilities, energy]
+  - name: Construction Dive
+    url: https://www.constructiondive.com/feeds/news/
+    region: Global
+    weight: 0.7
+    tags: [construction, infrastructure]
+  - name: Aviation24
+    url: https://www.aviation24.be/feed/
+    region: Global
+    weight: 0.7
+    tags: [aviation, aerospace]
+  - name: Maritime Executive
+    url: https://www.maritime-executive.com/articles.rss
+    region: Global
+    weight: 0.7
+    tags: [maritime, shipping, logistics]
+  - name: Seatrade Maritime
+    url: https://www.seatrade-maritime.com/rss.xml
+    region: Global
+    weight: 0.7
+    tags: [maritime, shipping]
+
 financial_announcements:
   - name: GlobeNewswire · Public Company News
     url: https://www.globenewswire.com/RssFeed/subjectcode/9-Public%20Company%20News/feedTitle/GlobeNewswire%20-%20Public%20Company%20News
