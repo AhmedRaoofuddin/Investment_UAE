@@ -20,6 +20,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false,
@@ -41,6 +42,38 @@ const GOLD = "#E8B36C";
 const GOLD_SOFT = "#FFD48A";
 const CYAN = "#4FD1E0";
 const ATMO = "#7B22D9"; // vivid violet — matches the galaxy reference purple halo
+
+// Arabic display names for all city pins.
+// City proper nouns rendered in Arabic script when locale === "ar".
+const CITY_NAMES_AR: Record<string, string> = {
+  "United Arab Emirates": "الإمارات",
+  "Dubai": "دبي",
+  "Abu Dhabi": "أبوظبي",
+  "London": "لندن",
+  "New York": "نيويورك",
+  "Paris": "باريس",
+  "Frankfurt": "فرانكفورت",
+  "Zurich": "زيورخ",
+  "Singapore": "سنغافورة",
+  "Hong Kong": "هونغ كونغ",
+  "Tokyo": "طوكيو",
+  "Shanghai": "شنغهاي",
+  "Seoul": "سيول",
+  "Mumbai": "مومباي",
+  "Delhi": "دلهي",
+  "Bangalore": "بنغالور",
+  "Sydney": "سيدني",
+  "Cape Town": "كيب تاون",
+  "Nairobi": "نيروبي",
+  "Lagos": "لاغوس",
+  "Istanbul": "إسطنبول",
+  "Cairo": "القاهرة",
+  "Riyadh": "الرياض",
+  "Doha": "الدوحة",
+  "São Paulo": "ساو باولو",
+  "Toronto": "تورونتو",
+  "San Francisco": "سان فرانسيسكو",
+};
 
 type City = { name: string; lat: number; lng: number };
 
@@ -93,6 +126,7 @@ type Ring = { lat: number; lng: number; maxR: number; propagationSpeed: number; 
 
 
 export function ConnectivityGlobe() {
+  const { locale } = useLocale();
   const globeRef = useRef<unknown>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const sceneInitDone = useRef(false);
@@ -332,23 +366,27 @@ export function ConnectivityGlobe() {
         htmlElementsData={htmlPins}
         htmlLat={"lat" as never}
         htmlLng={"lng" as never}
-        htmlAltitude={0.02}
+        htmlAltitude={0.005}
+        htmlTransitionDuration={150}
         htmlElement={(d: unknown) => {
           const pin = d as { name: string; hub?: boolean };
+          const isAr = locale === "ar";
+          const displayName = isAr ? (CITY_NAMES_AR[pin.name] ?? pin.name) : pin.name;
           const el = document.createElement("div");
           el.style.pointerEvents = "none";
           el.style.transform = "translate(-50%, -100%)";
           el.style.display = "flex";
           el.style.flexDirection = "column";
           el.style.alignItems = "center";
+          el.dir = "ltr"; // pin labels always LTR regardless of page locale
           if (pin.hub) {
             el.innerHTML = `
-              <div style="color:#E8B36C;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.95);margin-bottom:2px;white-space:nowrap;">${pin.name}</div>
+              <div style="color:#E8B36C;font-size:10px;font-weight:700;letter-spacing:0.08em;text-shadow:0 1px 3px rgba(0,0,0,0.95);margin-bottom:2px;white-space:nowrap;">${displayName}</div>
               <div style="width:6px;height:6px;border-radius:50%;background:#E8B36C;box-shadow:0 0 0 2px rgba(232,179,94,0.3),0 0 8px rgba(232,179,94,0.7);"></div>
             `;
           } else {
             el.innerHTML = `
-              <div style="color:rgba(255,255,255,0.92);font-size:8.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,0.95);margin-bottom:1px;white-space:nowrap;">${pin.name}</div>
+              <div style="color:rgba(255,255,255,0.92);font-size:8.5px;font-weight:600;letter-spacing:0.05em;text-shadow:0 1px 2px rgba(0,0,0,0.95);margin-bottom:1px;white-space:nowrap;">${displayName}</div>
               <div style="width:3px;height:3px;border-radius:50%;background:#4FD1E0;box-shadow:0 0 0 1.5px rgba(79,209,224,0.25),0 0 5px rgba(79,209,224,0.6);"></div>
             `;
           }
