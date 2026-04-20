@@ -606,7 +606,7 @@ def _deterministic_dossier(company: Company) -> Tuple[str, List[str], List[str]]
     if company.headquarters and company.headquarters.country:
         hq = company.headquarters.country
     sectors = (
-        ", ".join(s.value for s in company.sectors)
+        ", ".join(s.value.replace("_", " ") for s in company.sectors)
         if company.sectors else "multiple sectors"
     )
     n_sig = len(company.signals)
