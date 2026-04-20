@@ -37,7 +37,7 @@ export default function WhyInvestPage() {
     <>
       <Section className="pt-10 md:pt-16 pb-10 md:pb-16 overflow-x-hidden">
         <Eyebrow>{t("whyInvest.eyebrow")}</Eyebrow>
-        <div className="mt-6 grid gap-8 md:gap-8 lg:gap-10 md:grid-cols-[1fr_1.15fr] lg:grid-cols-[1fr_1.25fr] md:items-start">
+        <div className="mt-6 grid gap-8 lg:gap-10 md:grid-cols-2 md:items-start">
           {/* Left column: headline, subtitle, destinations list */}
           <div className="min-w-0">
             <SerifHeading level={1} className="max-w-2xl">
@@ -47,14 +47,12 @@ export default function WhyInvestPage() {
               {t("whyInvest.subtitle")}
             </p>
 
-            <div className="mt-7 md:mt-10">
+            <div className="mt-7 md:mt-10" dir="ltr">
               <div className="text-[10px] uppercase tracking-[0.25em] text-ink-500/70">
                 Live connectivity &middot; 24 destinations from Dubai &amp; Abu Dhabi
               </div>
-              {/* Region list: the UAE Hubs column is promoted to first
-                  position so the origin reads immediately. 4 columns on
-                  large screens compresses the vertical footprint so the
-                  globe column doesn't leave a sea of whitespace. */}
+              {/* Region list — dir=ltr so English city names always read
+                  left-to-right even when the page is in Arabic (RTL). */}
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-3 md:gap-x-6 md:gap-y-4 text-sm text-ink-500">
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">

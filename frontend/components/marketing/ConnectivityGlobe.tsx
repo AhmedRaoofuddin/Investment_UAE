@@ -239,12 +239,11 @@ export function ConnectivityGlobe() {
   return (
     <div
       ref={wrapRef}
+      dir="ltr"
       className="relative w-full max-w-full overflow-hidden rounded-md"
       style={{
         height: size.h,
         background: "#000000",
-        // Cap inline width so a stale initial size can never push the
-        // wrapper past the parent on first paint.
         maxWidth: "100%",
       }}
       aria-label="UAE global connectivity map"
