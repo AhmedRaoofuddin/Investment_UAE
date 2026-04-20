@@ -133,12 +133,14 @@ export function ConnectivityGlobe() {
 
     const controls = g.controls();
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.35;
+    controls.autoRotateSpeed = 0.3;
     controls.enableZoom = false;
     controls.enablePan = false;
-    // Camera centred on the UAE so the first frame shows the origin
-    // node clearly rather than mid-ocean.
-    g.pointOfView?.({ lat: UAE.lat, lng: UAE.lng, altitude: 2.1 }, 0);
+    // Camera framed so the UAE is visible but a full hemisphere of
+    // destinations reads at once. Altitude 2.6 shows Europe, Africa,
+    // the Gulf and South Asia in a single frame without zooming in on
+    // the Arabian peninsula only.
+    g.pointOfView?.({ lat: 20, lng: 40, altitude: 2.6 }, 0);
 
     let cloudsMesh: { rotation: { y: number } } | null = null;
     let raf = 0;
@@ -203,16 +205,18 @@ export function ConnectivityGlobe() {
     []
   );
 
-  // Points: the UAE is larger and gold; destinations are smaller white.
+  // Points: small, flush-to-surface. The HTML pins above take the
+  // visual weight; these sprites just provide the glowing dot under
+  // each label so the label has a precise anchor.
   const points: Point[] = useMemo(
     () => [
-      { lat: UAE.lat, lng: UAE.lng, color: GOLD, altitude: 0.02, radius: 1.2 },
+      { lat: UAE.lat, lng: UAE.lng, color: GOLD, altitude: 0.005, radius: 0.3 },
       ...DESTINATIONS.map((d) => ({
         lat: d.lat,
         lng: d.lng,
         color: "#FFFFFF",
-        altitude: 0.008,
-        radius: 0.45,
+        altitude: 0.003,
+        radius: 0.18,
       })),
     ],
     []
@@ -231,21 +235,13 @@ export function ConnectivityGlobe() {
     []
   );
 
-  // Rings: a strong pulse on the UAE, subtle pulses on a handful of
-  // destinations so the whole hemisphere shows motion.
+  // Rings: one subtle pulse on the UAE. Earlier version had giant
+  // concentric rings that dwarfed the Arabian peninsula; this keeps
+  // the ring small so it reads as a precise location marker rather
+  // than a radar sweep.
   const rings: Ring[] = useMemo(
     () => [
-      { lat: UAE.lat, lng: UAE.lng, maxR: 8, propagationSpeed: 3.5, repeatPeriod: 1200 },
-      { lat: UAE.lat, lng: UAE.lng, maxR: 4, propagationSpeed: 2.5, repeatPeriod: 1800 },
-      ...[DESTINATIONS[0], DESTINATIONS[5], DESTINATIONS[10], DESTINATIONS[13], DESTINATIONS[21]].map(
-        (d, i) => ({
-          lat: d.lat,
-          lng: d.lng,
-          maxR: 3,
-          propagationSpeed: 2.5,
-          repeatPeriod: 2200 + i * 200,
-        })
-      ),
+      { lat: UAE.lat, lng: UAE.lng, maxR: 2, propagationSpeed: 1.2, repeatPeriod: 2400 },
     ],
     []
   );
@@ -316,12 +312,12 @@ export function ConnectivityGlobe() {
         atmosphereAltitude={0.2}
         arcsData={arcs}
         arcColor={"color" as never}
-        arcStroke={0.7}
-        arcAltitudeAutoScale={0.55}
-        arcDashLength={0.35}
-        arcDashGap={1.4}
+        arcStroke={0.18}
+        arcAltitudeAutoScale={0.4}
+        arcDashLength={0.4}
+        arcDashGap={2}
         arcDashInitialGap={() => Math.random() * 4}
-        arcDashAnimateTime={2400}
+        arcDashAnimateTime={3200}
         pointsData={points}
         pointLat="lat"
         pointLng="lng"
@@ -346,13 +342,13 @@ export function ConnectivityGlobe() {
           el.style.alignItems = "center";
           if (pin.hub) {
             el.innerHTML = `
-              <div style="color:#E8B36C;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,0.9),0 0 12px rgba(232,179,94,0.6);margin-bottom:2px;white-space:nowrap;">${pin.name}</div>
-              <div style="width:10px;height:10px;border-radius:50%;background:#E8B36C;box-shadow:0 0 0 3px rgba(232,179,94,0.35),0 0 16px rgba(232,179,94,0.8);"></div>
+              <div style="color:#E8B36C;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.95);margin-bottom:2px;white-space:nowrap;">${pin.name}</div>
+              <div style="width:6px;height:6px;border-radius:50%;background:#E8B36C;box-shadow:0 0 0 2px rgba(232,179,94,0.3),0 0 8px rgba(232,179,94,0.7);"></div>
             `;
           } else {
             el.innerHTML = `
-              <div style="color:rgba(255,255,255,0.95);font-size:9.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.95);margin-bottom:1px;white-space:nowrap;">${pin.name}</div>
-              <div style="width:5px;height:5px;border-radius:50%;background:#4FD1E0;box-shadow:0 0 0 2px rgba(79,209,224,0.3),0 0 8px rgba(79,209,224,0.7);"></div>
+              <div style="color:rgba(255,255,255,0.92);font-size:8.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,0.95);margin-bottom:1px;white-space:nowrap;">${pin.name}</div>
+              <div style="width:3px;height:3px;border-radius:50%;background:#4FD1E0;box-shadow:0 0 0 1.5px rgba(79,209,224,0.25),0 0 5px rgba(79,209,224,0.6);"></div>
             `;
           }
           return el;
