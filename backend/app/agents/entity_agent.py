@@ -363,6 +363,8 @@ class EntityAgent:
             # Adverbial tails that leak from headlines ("Anthropic just",
             # "OpenAI now", "Stripe recently")
             "just", "only", "now", "recently", "still", "then",
+            # List-boundary tails ("Joa Capital and other [investors]").
+            "other", "others",
             # Common article-body adjectives the regex grabs trailing
             "major", "key", "new", "top", "first",
         }:
