@@ -47,30 +47,31 @@ export default function WhyInvestPage() {
               {t("whyInvest.subtitle")}
             </p>
 
-            <div className="mt-7 md:mt-10" dir="ltr">
+            <div className="mt-7 md:mt-10">
               <div className="text-[10px] uppercase tracking-[0.25em] text-ink-500/70">
-                Live connectivity &middot; 24 destinations from Dubai &amp; Abu Dhabi
+                {t("whyInvest.conn.label")}
               </div>
-              {/* Region list — dir=ltr so English city names always read
-                  left-to-right even when the page is in Arabic (RTL). */}
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-3 md:gap-x-6 md:gap-y-4 text-sm text-ink-500">
+              {/* Region grid — dir=ltr keeps column order UAE Hubs → Gulf →
+                  Europe → Asia regardless of page locale. City names are
+                  international proper nouns kept in Latin script. */}
+              <div dir="ltr" className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-3 md:gap-x-6 md:gap-y-4 text-sm text-ink-500">
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    UAE Hubs
+                    {t("whyInvest.conn.uaeHubs")}
                   </div>
                   <div className="font-semibold text-navy-800">Dubai</div>
                   <div className="font-semibold text-navy-800">Abu Dhabi</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    Gulf
+                    {t("whyInvest.conn.gulf")}
                   </div>
                   <div>Riyadh</div>
                   <div>Doha</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    Europe
+                    {t("whyInvest.conn.europe")}
                   </div>
                   <div>London</div>
                   <div>Paris</div>
@@ -80,7 +81,7 @@ export default function WhyInvestPage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    Asia &amp; Pacific
+                    {t("whyInvest.conn.asiaPacific")}
                   </div>
                   <div>Singapore</div>
                   <div>Hong Kong</div>
@@ -91,7 +92,7 @@ export default function WhyInvestPage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    Subcontinent
+                    {t("whyInvest.conn.subcontinent")}
                   </div>
                   <div>Mumbai</div>
                   <div>Delhi</div>
@@ -99,7 +100,7 @@ export default function WhyInvestPage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    Americas
+                    {t("whyInvest.conn.americas")}
                   </div>
                   <div>New York</div>
                   <div>San Francisco</div>
@@ -108,7 +109,7 @@ export default function WhyInvestPage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    Africa
+                    {t("whyInvest.conn.africa")}
                   </div>
                   <div>Cape Town</div>
                   <div>Nairobi</div>
