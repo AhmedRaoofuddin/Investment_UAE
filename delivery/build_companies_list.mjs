@@ -114,7 +114,12 @@ function typeLabel(t) {
 
 // ─── Fetch live production snapshot ──────────────────────────────
 console.log('Fetching live pipeline snapshot...');
-const res = await fetch(`${BACKEND}/api/companies?limit=50&min_score=40`);
+// Request the full cached pipeline (capped at 200 by the backend) so
+// the tightened quality filter still has enough headroom to produce a
+// clean top-25 after rejecting fragments and sanctioned-state captures.
+// The min_score=40 cap on the old call was suppressing genuine names
+// whose composite scores fall slightly below that bar.
+const res = await fetch(`${BACKEND}/api/companies?limit=200&min_score=0`);
 if (!res.ok) {
   console.error(`Backend returned ${res.status}`);
   process.exit(1);
@@ -127,6 +132,65 @@ console.log(`Received ${companies.length} companies`);
 // backend is tuned for recall so analysts can see the full picture; this
 // deliverable is tuned for precision so only names that clearly look like
 // real companies reach the Ministry.
+//
+// This filter mirrors the rules in backend/app/agents/entity_agent.py so
+// the companion PDF stays clean even if the live API has not yet been
+// redeployed with the tightened backend filter.
+
+const COUNTRY_SINGLE_TOKENS = new Set([
+  'iran', 'israel', 'syria', 'russia', 'ukraine', 'yemen',
+  'afghanistan', 'turkey', 'libya', 'sudan', 'belarus',
+  'cuba', 'venezuela', 'myanmar', 'eritrea', 'somalia',
+  'germany', 'france', 'italy', 'spain', 'brazil', 'mexico',
+  'canada', 'australia', 'japan', 'indonesia', 'thailand',
+  'vietnam', 'philippines', 'malaysia', 'poland', 'netherlands',
+  'greece', 'portugal', 'norway', 'sweden', 'finland',
+  'denmark', 'ireland', 'austria', 'switzerland', 'belgium',
+  'nigeria', 'kenya', 'ethiopia', 'ghana', 'senegal',
+]);
+
+const TOPIC_WORDS = new Set([
+  'education', 'infrastructure', 'proptech', 'fintech',
+  'cleantech', 'healthcare', 'logistics', 'manufacturing',
+  'tourism', 'defense', 'defence', 'energy', 'agritech',
+  'biotech', 'edtech', 'insurtech', 'regtech', 'mobility',
+  'retail', 'ecommerce', 'e-commerce', 'aviation', 'telecom',
+  'media', 'gaming', 'adtech', 'martech', 'hrtech',
+]);
+
+const GENERIC_PREFIXES = new Set([
+  'ai', 'ml', 'nlp', 'iot', 'ar', 'vr', 'dl',
+  'saudi', 'uae', 'us', 'uk', 'indian', 'chinese', 'japanese',
+  'african', 'european', 'asian', 'arabian', 'gulf', 'mena',
+  'american', 'global', 'international', 'regional', 'national',
+]);
+
+const PUBLICATION_STARTS = new Set([
+  'wired', 'techcrunch', 'reuters', 'bloomberg', 'forbes',
+  'cnn', 'bbc', 'guardian', 'economist', 'axios', 'verge',
+  'engadget', 'gizmodo', 'wamda', 'magnitt', 'menabytes',
+  'sifted', 'crunchbase', 'venturebeat', 'zawya', 'agbi',
+  'khaleej', 'gulf', 'arabian', 'skift',
+]);
+
+const TRAILING_NOISE = new Set([
+  'just', 'only', 'now', 'recently', 'still', 'then',
+  'also', 'not', 'major', 'key', 'new', 'top', 'first',
+  'and', 'or', 'of', 'for', 'with', 'from', 'to', 'in',
+  'on', 'at', 'by', 'the', 'a', 'an',
+  // Trailing "other"/"others" means a clause boundary cut off the
+  // name mid-list ("Joa Capital and other [investors]").
+  'other', 'others',
+]);
+
+// Geographic-feature leading tokens. "Strait of Hormuz", "Bay of
+// Bengal", "Mount Everest" — not companies.
+const GEO_FEATURES = new Set([
+  'strait', 'sea', 'bay', 'ocean', 'peninsula', 'cape',
+  'mount', 'lake', 'river', 'sound', 'channel', 'island',
+  'islands', 'valley', 'desert', 'plateau',
+]);
+
 function looksLikeRealCompany(name) {
   if (!name || name.length < 3) return false;
   const trimmed = name.trim();
@@ -135,7 +199,7 @@ function looksLikeRealCompany(name) {
   // Starts with an article or determiner = fragment
   if (/^(?:the|a|an|this|that|these|those|some|new|existing|several|other)\s/i.test(trimmed)) return false;
   // Contains finance-verb noise = fragment
-  if (/\b(?:round|funding|investment|raised|raises|series|led\s+by|billion|million|backed|secures?)\b/i.test(trimmed)) return false;
+  if (/\b(?:round|funding|investment|raised|raises|series|led\s+by|billion|million|backed|secures?|six[- ]figure|seven[- ]figure)\b/i.test(trimmed)) return false;
   // Contains generic phrases that aren't company names
   if (/\b(?:projects?|market|sector|industry|ecosystem|region|economy)\b/i.test(trimmed)) return false;
   const words = trimmed.split(/\s+/);
@@ -152,6 +216,71 @@ function looksLikeRealCompany(name) {
     'united states', 'united kingdom', 'singapore', 'india', 'china',
   ];
   if (locations.includes(lowered)) return false;
+  // Reject single-token country names (Iran, Russia, etc.)
+  if (words.length === 1 && COUNTRY_SINGLE_TOKENS.has(lowered)) return false;
+  // Reject single-token topic / sector nouns
+  if (words.length === 1 && TOPIC_WORDS.has(lowered)) return false;
+  // Reject captures that start with a known publication brand
+  if (words.length >= 2 && PUBLICATION_STARTS.has(words[0].toLowerCase())) return false;
+  // Reject multi-word captures where every token is a generic prefix,
+  // topic word, or country — "AI education", "Saudi proptech", "Gulf fintech".
+  if (words.length >= 2) {
+    const loweredTokens = words.map(w => w.toLowerCase());
+    const allGeneric = loweredTokens.every(t =>
+      TOPIC_WORDS.has(t) || GENERIC_PREFIXES.has(t) || COUNTRY_SINGLE_TOKENS.has(t)
+    );
+    if (allGeneric) return false;
+  }
+  // Reject captures whose trailing token is adverbial / function-word noise
+  const lastTok = words[words.length - 1].toLowerCase().replace(/[.,;:]+$/, '');
+  if (TRAILING_NOISE.has(lastTok)) return false;
+  // Reject captures with clause-boundary prepositions in the middle
+  // ("Cyclex in six-figure deal Saudi-Egyptian").
+  if (words.length >= 3) {
+    const middle = words.slice(1, -1).map(w => w.toLowerCase());
+    if (middle.some(t => ['in', 'with', 'for', 'by', 'from', 'at', 'on'].includes(t))) {
+      return false;
+    }
+  }
+  // Reject geographic-feature headlines ("Strait of Hormuz", "Bay of
+  // Bengal"). These are locations mentioned in news, not companies.
+  if (GEO_FEATURES.has(words[0].toLowerCase())) return false;
+  // Reject multi-word captures where more than one non-leading token
+  // starts lowercase and is not a known glue word. Real English or
+  // transliterated Arabic company names use Title Case throughout.
+  // Catches foreign-language headline fragments ("Projekti kogu eluea
+  // IRR alates esialgsest") that slip through when a feed publishes
+  // non-English article titles.
+  if (words.length >= 3) {
+    const glueWords = new Set(['of', 'and', 'for', 'the', 'a', 'an', 'de', 'la', 'le', 'du', 'el']);
+    const lowerStarters = words.slice(1).filter(w => {
+      const first = w[0];
+      if (!first) return false;
+      if (first !== first.toLowerCase() || !/[a-z]/.test(first)) return false;
+      return !glueWords.has(w.toLowerCase());
+    });
+    if (lowerStarters.length >= 2) return false;
+  }
+  // Reject names containing a topic word if the remaining tokens are
+  // too weak to anchor a company identity. "Saudi proptech Jozo" has
+  // one strong-ish token ("Jozo") but "proptech" + "saudi" indicate
+  // the capture is a sector-header-plus-random-noun, not a company.
+  if (words.length >= 2) {
+    const loweredTokens = words.map(w => w.toLowerCase());
+    const topicHit = loweredTokens.some(t => TOPIC_WORDS.has(t));
+    const genericHit = loweredTokens.some(t => GENERIC_PREFIXES.has(t) || COUNTRY_SINGLE_TOKENS.has(t));
+    const distinctiveCount = loweredTokens.filter(t =>
+      !TOPIC_WORDS.has(t) && !GENERIC_PREFIXES.has(t) &&
+      !COUNTRY_SINGLE_TOKENS.has(t) && !['of', 'and', 'for', 'the', 'a', 'an'].includes(t)
+    ).length;
+    // If the name has a topic word AND a generic prefix/country, it
+    // needs at least 2 distinctive tokens OR a corporate-suffix token
+    // to be credible. One distinctive token is too easy for random
+    // nouns to slip through.
+    const corpSuffixes = new Set(['inc', 'ltd', 'llc', 'plc', 'corp', 'ventures', 'capital', 'partners', 'holdings', 'group', 'bank']);
+    const hasCorpSuffix = loweredTokens.some(t => corpSuffixes.has(t));
+    if (topicHit && genericHit && distinctiveCount < 2 && !hasCorpSuffix) return false;
+  }
   return true;
 }
 

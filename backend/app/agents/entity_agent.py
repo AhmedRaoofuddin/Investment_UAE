@@ -239,6 +239,55 @@ class EntityAgent:
         "among", "with", "by", "from", "for", "in", "on", "of",
     }
 
+    # Single-token country / jurisdiction names. These are extracted as
+    # "subjects" of headlines ("Iran announces...", "Russia signals...")
+    # and must never surface to a ministerial reviewer as a company —
+    # especially sanctioned or politically-sensitive states.
+    _COUNTRY_SINGLE_TOKENS = {
+        "iran", "israel", "syria", "russia", "ukraine", "yemen",
+        "afghanistan", "turkey", "libya", "sudan", "belarus",
+        "cuba", "venezuela", "myanmar", "eritrea", "somalia",
+        "germany", "france", "italy", "spain", "brazil", "mexico",
+        "canada", "australia", "japan", "indonesia", "thailand",
+        "vietnam", "philippines", "malaysia", "poland", "netherlands",
+        "turkey", "greece", "portugal", "norway", "sweden", "finland",
+        "denmark", "ireland", "austria", "switzerland", "belgium",
+        "nigeria", "kenya", "ethiopia", "ghana", "senegal",
+    }
+
+    # Generic sector / topic nouns that are not company names on their
+    # own, and that conjoin with qualifiers to produce fake companies
+    # like "AI education", "AI infrastructure", "Saudi proptech".
+    _TOPIC_WORDS = {
+        "education", "infrastructure", "proptech", "fintech",
+        "cleantech", "healthcare", "logistics", "manufacturing",
+        "tourism", "defense", "defence", "energy", "agritech",
+        "biotech", "edtech", "insurtech", "regtech", "mobility",
+        "retail", "ecommerce", "e-commerce", "aviation", "telecom",
+        "media", "gaming", "adtech", "martech", "hrtech",
+    }
+
+    # Media / publication brands that the extractor occasionally glues
+    # onto a real company name (e.g. "Wired OpenAI", "TechCrunch Stripe").
+    # Any capture starting with one of these is a parse artefact.
+    _PUBLICATION_STARTS = {
+        "wired", "techcrunch", "reuters", "bloomberg", "forbes",
+        "cnn", "bbc", "guardian", "economist", "axios", "verge",
+        "engadget", "gizmodo", "wamda", "magnitt", "menabytes",
+        "sifted", "crunchbase", "venturebeat", "zawya", "agbi",
+        "khaleej", "gulf", "arabian", "skift",
+    }
+
+    # Broad / generic prefix tokens. These have no company-identity
+    # weight on their own — a name composed entirely of these plus
+    # topic / country words is a topical phrase, not a company.
+    _GENERIC_PREFIXES = {
+        "ai", "ml", "nlp", "iot", "ar", "vr", "dl",
+        "saudi", "uae", "us", "uk", "indian", "chinese", "japanese",
+        "african", "european", "asian", "arabian", "gulf", "mena",
+        "american", "global", "international", "regional", "national",
+    }
+
     def _looks_like_company(self, name: str) -> bool:
         """Instance-method delegator so existing call sites continue to
         work. The real logic lives on the classmethod below so the
@@ -311,9 +360,50 @@ class EntityAgent:
             # Auxiliary / modal verbs that leak in from headline subjects
             "has", "have", "had", "was", "were", "is", "are", "will",
             "would", "been", "being", "also", "not", "does", "did",
+            # Adverbial tails that leak from headlines ("Anthropic just",
+            # "OpenAI now", "Stripe recently")
+            "just", "only", "now", "recently", "still", "then",
             # Common article-body adjectives the regex grabs trailing
             "major", "key", "new", "top", "first",
         }:
+            return False
+        # Reject single-token country names (adds to the existing city
+        # list). Catches "Iran", "Russia", "Ukraine" etc. that leak from
+        # headline subjects.
+        if len(words) == 1 and words[0].lower() in cls._COUNTRY_SINGLE_TOKENS:
+            return False
+        # Reject single-token topic / sector nouns ("Education",
+        # "Infrastructure", "Proptech"). These are topic headings, not
+        # company names.
+        if len(words) == 1 and words[0].lower() in cls._TOPIC_WORDS:
+            return False
+        # Reject multi-word captures where EVERY token is generic:
+        # either a topic / sector noun, a broad prefix acronym, or a
+        # country name. Catches "AI education", "AI infrastructure",
+        # "Saudi proptech", "Gulf fintech". Legit names like "Octopus
+        # Energy" survive because "octopus" is not in any generic set.
+        if len(words) >= 2 and all(
+            (t in cls._TOPIC_WORDS
+             or t in cls._GENERIC_PREFIXES
+             or t in cls._COUNTRY_SINGLE_TOKENS)
+            for t in lowered_tokens
+        ):
+            return False
+        # Reject captures that start with a known publication / outlet
+        # name. The extractor sometimes glues a byline or citation onto
+        # the company it was reporting on ("Wired OpenAI").
+        if words[0].lower() in cls._PUBLICATION_STARTS and len(words) >= 2:
+            return False
+        # Reject multi-word captures whose middle tokens contain
+        # clause-boundary markers. Catches "Cyclex in six-figure deal
+        # Saudi-Egyptian" (word "in" in the middle) and similar
+        # headline-body hybrids that slip past the glue-count rule
+        # because a hyphenated compound like "six-figure" reads as one
+        # token.
+        if len(words) >= 3 and any(
+            t in {"in", "with", "for", "by", "from", "at", "on"}
+            for t in lowered_tokens[1:-1]
+        ):
             return False
         # Single-token names that are countries, cities, or generic
         # one-word nouns are almost always location headers or article

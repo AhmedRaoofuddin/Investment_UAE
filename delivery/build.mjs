@@ -33,7 +33,7 @@ function makeAnchor(text) {
 
 // ─── Primitives ────────────────────────────────────────────────────
 const T = (text, opts = {}) => new TextRun({
-  text, font: 'Calibri', size: 22, color: '2A2E3A', ...opts,
+  text, font: 'Cambria', size: 22, color: '2A2E3A', ...opts,
 });
 
 const P = (children, opts = {}) => new Paragraph({
@@ -55,7 +55,7 @@ function H1(text, { pageBreak = false } = {}) {
     children: [
       new Bookmark({
         id: anchor,
-        children: [new TextRun({ text, font: 'Calibri', size: 36, bold: true, color: NAVY })],
+        children: [new TextRun({ text, font: 'Cambria', size: 36, bold: true, color: NAVY })],
       }),
     ],
   });
@@ -65,21 +65,21 @@ const H2 = (text) => new Paragraph({
   heading: HeadingLevel.HEADING_2,
   spacing: { before: 260, after: 120 },
   keepNext: true,
-  children: [new TextRun({ text, font: 'Calibri', size: 26, bold: true, color: NAVY })],
+  children: [new TextRun({ text, font: 'Cambria', size: 26, bold: true, color: NAVY })],
 });
 
 const H3 = (text) => new Paragraph({
   heading: HeadingLevel.HEADING_3,
   spacing: { before: 200, after: 80 },
   keepNext: true,
-  children: [new TextRun({ text, font: 'Calibri', size: 22, bold: true, color: NAVY_DARK })],
+  children: [new TextRun({ text, font: 'Cambria', size: 22, bold: true, color: NAVY_DARK })],
 });
 
 const Eyebrow = (text) => new Paragraph({
   spacing: { before: 100, after: 60 },
   children: [new TextRun({
     text: text.toUpperCase(),
-    font: 'Calibri', size: 18, bold: true, color: GOLD_DARK, characterSpacing: 40,
+    font: 'Cambria', size: 18, bold: true, color: GOLD_DARK, characterSpacing: 40,
   })],
 });
 
@@ -91,7 +91,7 @@ const Divider = () => new Paragraph({
 const Caption = (text) => new Paragraph({
   alignment: AlignmentType.CENTER,
   spacing: { before: 60, after: 200 },
-  children: [new TextRun({ text, font: 'Calibri', size: 18, italics: true, color: INK_LIGHT })],
+  children: [new TextRun({ text, font: 'Cambria', size: 18, italics: true, color: INK_LIGHT })],
 });
 
 // Image helper (keeps aspect ratio, centered)
@@ -141,7 +141,7 @@ function cell(text, { width, header = false, fill, bold = false, align = Alignme
     spacing: { after: 0 },
     children: [new TextRun({
       text: line,
-      font: 'Calibri',
+      font: 'Cambria',
       size: header ? 20 : 20,
       bold: header || bold,
       color: header ? 'FFFFFF' : '2A2E3A',
@@ -191,7 +191,7 @@ const cover = [
     spacing: { before: 120, after: 80 },
     children: [new TextRun({
       text: 'MINISTRY OF INVESTMENT  \u00B7  INVEST UAE',
-      font: 'Calibri', size: 20, bold: true, color: GOLD_DARK, characterSpacing: 60,
+      font: 'Cambria', size: 20, bold: true, color: GOLD_DARK, characterSpacing: 60,
     })],
   }),
   new Paragraph({
@@ -199,7 +199,7 @@ const cover = [
     spacing: { before: 360, after: 120 },
     children: [new TextRun({
       text: 'InvestUAE Signal Intelligence',
-      font: 'Calibri', size: 52, bold: true, color: NAVY,
+      font: 'Cambria', size: 52, bold: true, color: NAVY,
     })],
   }),
   new Paragraph({
@@ -207,7 +207,7 @@ const cover = [
     spacing: { after: 120 },
     children: [new TextRun({
       text: 'An AI-Powered Investment Signal Detection Platform',
-      font: 'Calibri', size: 26, color: NAVY_DARK,
+      font: 'Cambria', size: 26, color: NAVY_DARK,
     })],
   }),
   new Paragraph({
@@ -215,7 +215,7 @@ const cover = [
     spacing: { before: 240, after: 120 },
     children: [new TextRun({
       text: 'Pilot Delivery Document',
-      font: 'Calibri', size: 22, italics: true, color: INK,
+      font: 'Cambria', size: 22, italics: true, color: INK,
     })],
   }),
   new Paragraph({
@@ -223,7 +223,7 @@ const cover = [
     spacing: { before: 80, after: 60 },
     children: [new TextRun({
       text: 'Response to the Ministry of Investment AI Case Study',
-      font: 'Calibri', size: 20, color: INK_LIGHT,
+      font: 'Cambria', size: 20, color: INK_LIGHT,
     })],
   }),
   new Paragraph({ spacing: { before: 1400 }, children: [] }),
@@ -233,18 +233,18 @@ const cover = [
     spacing: { before: 240, after: 80 },
     children: [new TextRun({
       text: 'Submitted by',
-      font: 'Calibri', size: 18, color: INK_LIGHT, characterSpacing: 40,
+      font: 'Cambria', size: 18, color: INK_LIGHT, characterSpacing: 40,
     })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 40 },
-    children: [new TextRun({ text: 'Ahmed Raoofuddin', font: 'Calibri', size: 26, bold: true, color: NAVY })],
+    children: [new TextRun({ text: 'Ahmed Raoofuddin', font: 'Cambria', size: 26, bold: true, color: NAVY })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { after: 40 },
-    children: [new TextRun({ text: 'April 2026', font: 'Calibri', size: 20, color: INK })],
+    children: [new TextRun({ text: 'April 2026', font: 'Cambria', size: 20, color: INK })],
   }),
 ];
 
@@ -254,13 +254,13 @@ const docControl = [
     pageBreakBefore: true,
     heading: HeadingLevel.HEADING_1,
     spacing: { after: 240 },
-    children: [new TextRun({ text: 'Document Control', font: 'Calibri', size: 36, bold: true, color: NAVY })],
+    children: [new TextRun({ text: 'Document Control', font: 'Cambria', size: 36, bold: true, color: NAVY })],
   }),
   new Paragraph({
     spacing: { after: 280 },
     children: [new TextRun({
       text: 'This document is submitted as the pilot-phase response to the Ministry of Investment\u2019s AI Case Study. It summarises both the prototype requested in the brief and the additional production-shape primitives that accompany it.',
-      font: 'Calibri', size: 22, italics: true, color: INK,
+      font: 'Cambria', size: 22, italics: true, color: INK,
     })],
   }),
   buildTable(
@@ -280,78 +280,91 @@ const docControl = [
   ),
 ];
 
+// ─── Review Access and Credentials ─────────────────────────────────
+// Prominent, reviewer-facing section so the Ministry panel can sign in
+// to the authenticated workspace tier without further correspondence.
+const credentialsSec = [
+  new Paragraph({
+    pageBreakBefore: true,
+    heading: HeadingLevel.HEADING_1,
+    spacing: { after: 240 },
+    children: [new TextRun({ text: 'Review Access and Credentials', font: 'Cambria', size: 36, bold: true, color: NAVY })],
+  }),
+  new Paragraph({
+    spacing: { after: 240 },
+    children: [new TextRun({
+      text: 'The public signal platform is reachable from any browser without authentication. The authenticated investor workspace tier sits behind sign-in and exposes per-tenant state: watchlists, encrypted connector credentials, notifications and the analytics dashboard. A shared review account has been provisioned specifically for the Ministry of Investment panel so that the workspace tier can be inspected without creating a new tenant.',
+      font: 'Cambria', size: 22, italics: true, color: INK,
+    })],
+  }),
+  Eyebrow('Shared review account'),
+  buildTable(
+    [2400, 6960],
+    ['Field', 'Value'],
+    [
+      ['Sign-in URL',     'https://frontend-iota-seven-30.vercel.app/auth/signin'],
+      ['Email address',   'devzalinos@gmail.com'],
+      ['Password',        'InvestUAE2026!'],
+      ['Account role',    'Tenant owner (full read and write access to the workspace surface)'],
+      ['Scope of access', 'Pulse, Overview, Analytics Dashboard, Connections, Watchlist, Notifications inbox'],
+      ['Session handling','Auth.js v5 with opaque cookie sessions. Passwords stored as bcrypt hashes.'],
+      ['Audit trail',     'Every sign-in, connector write and AI decision taken during the review is recorded as an append-only AuditEntry row, viewable on request.'],
+    ],
+    { stripe: true },
+  ),
+  new Paragraph({ spacing: { before: 200 }, children: [] }),
+  P(T('This account is isolated from any production tenant and may be rotated at the Ministry\u2019s request. Rate limiting on the sign-in route is capped at five attempts per minute per IP, consistent with the OWASP API4:2023 baseline.')),
+];
+
 // ─── Foreword (moved to the front) ─────────────────────────────────
+// Note: no forced page break before the H1. The auto TOC field writes
+// a trailing paragraph marker; a forced break would orphan that marker
+// on its own blank page. H1 itself has keepNext:true so it flows cleanly.
 const foreword = [
-  H1('Foreword and Acknowledgement', { pageBreak: true }),
+  H1('Foreword and Acknowledgement'),
   P(T('It is a privilege to write to the Ministry of Investment of the United Arab Emirates. The brief that prompted this work is a thoughtful articulation of a genuine problem, and a problem that matters. Every week, tens of thousands of company announcements land on the public record. Buried within them are the earliest indicators that a firm may be preparing to cross a border, open a regional office, raise growth capital or move its centre of gravity. Surfacing those signals early is the difference between a country that reacts to global capital flows and a country that shapes them.')),
   P(T('The United Arab Emirates has chosen the second path. Every national strategy the Ministry publishes, from the National Artificial Intelligence Strategy 2031 to Net Zero 2050, from Operation 300 billion to Make it in the Emirates, signals the same ambition: a deliberate, forward-looking, disciplined approach to attracting investment that aligns with the nation\u2019s long-term priorities. The case study that this document responds to sits directly within that ambition.')),
   P(T('The work presented here began as a simple prototype in response to the brief. It grew, carefully and intentionally, into a production-shape pilot. The reason is straightforward: an investment signal detection tool for a ministry is not the same thing as an investment signal detection tool for a newsroom. A ministerial tool must be auditable, tenant-isolated, bilingual, compliant with the Personal Data Protection Law, alert to sanctions and politically-exposed persons, and defensible against the kinds of adversarial content that appear in low-trust corners of the open web. Each of those properties has been implemented, tested, and shipped.')),
-  P(T('I have taken care to be honest about what has been delivered and what remains. A pilot is not a general availability product, and this document draws that line plainly. The platform is live in Frankfurt today. A migration path to UAE-sovereign hosting, whether Microsoft Azure UAE North or G42 Core42, is documented and requires no application code changes. Federated sign-in through UAE PASS, live sanctions-list synchronisation, real-time event-driven surveillance and SOC 2 Type II attestation are scheduled for general availability rather than the pilot, and this document says so without ambiguity.')),
-  P(T('My sincere thanks to the Ministry for articulating the problem with the clarity it deserves, and for the opportunity to respond. The work below stands as a concrete demonstration of what is possible. I would be glad to take it further under the Ministry\u2019s direction.')),
-  new Paragraph({ spacing: { before: 240 }, children: [] }),
+  P(T('I have taken care to be honest about what has been delivered and what remains. A pilot is not a general availability product, and this document draws that line plainly. Tenant data at rest lives in Frankfurt (Neon, AWS eu-central-1), chosen deliberately for its privacy posture and as a staging point adjacent to the UAE-sovereign general availability target on Microsoft Azure UAE North or G42 Core42, to which the platform will migrate without application code changes. Federated sign-in through UAE PASS, live sanctions-list synchronisation, real-time event-driven surveillance, SOC 2 Type II attestation and region-pinning the Vercel application layer to Frankfurt are scheduled for general availability rather than the pilot, and this document says so without ambiguity.')),
+  // keepNext on the final body paragraph and every signature line so Word
+  // never orphans the sign-off block onto a page of its own.
+  P(T('My sincere thanks to the Ministry for articulating the problem with the clarity it deserves, and for the opportunity to respond. The work below stands as a concrete demonstration of what is possible. I would be glad to take it further under the Ministry\u2019s direction.'),
+    { keepNext: true }),
+  new Paragraph({ spacing: { before: 240 }, keepNext: true, children: [] }),
   P([
-    new TextRun({ text: 'With respect and gratitude,', font: 'Calibri', size: 22, color: NAVY }),
-  ]),
+    new TextRun({ text: 'With respect and gratitude,', font: 'Cambria', size: 22, color: NAVY }),
+  ], { keepNext: true }),
   P([
-    new TextRun({ text: 'Ahmed Raoofuddin', font: 'Calibri', size: 24, bold: true, color: NAVY }),
-  ]),
+    new TextRun({ text: 'Ahmed Raoofuddin', font: 'Cambria', size: 24, bold: true, color: NAVY }),
+  ], { keepNext: true }),
   P([
-    new TextRun({ text: 'April 2026', font: 'Calibri', size: 20, italics: true, color: INK_LIGHT }),
+    new TextRun({ text: 'April 2026', font: 'Cambria', size: 20, italics: true, color: INK_LIGHT }),
   ]),
 ];
 
-// ─── TOC with clickable internal links ─────────────────────────────
-const TOC_ENTRIES = [
-  'Executive Summary',
-  '1. Context and the Ministry\u2019s Brief',
-  '2. Interpretation of the Task',
-  '3. Solution Overview',
-  '4. Platform Walkthrough',
-  '5. Arabic and Bilingual Interface',
-  '6. Investor Workspace',
-  '7. System Architecture',
-  '8. AI Agent Framework',
-  '9. AI Signal Detection Pipeline',
-  '10. Safety Taxonomy and Compliance',
-  '11. Database Design and Rationale',
-  '12. Testing Philosophy and Evidence',
-  '13. Deployment, Operations and Residency',
-  '14. Future Scope and Path to General Availability',
-  '15. Closing Note',
-];
-
-function tocEntry(title) {
-  const anchor = makeAnchor(title);
-  return new Paragraph({
-    spacing: { before: 90, after: 90 },
-    tabStops: [{ type: TabStopType.RIGHT, position: 9360, leader: 'dot' }],
-    children: [
-      new InternalHyperlink({
-        anchor,
-        children: [new TextRun({
-          text: title,
-          font: 'Calibri', size: 22, color: NAVY,
-        })],
-      }),
-    ],
-  });
-}
-
+// ─── TOC: auto-generated via a Word TOC field (populated by LibreOffice
+//     when update_and_export.bas calls oIndexes.update()). Hyperlinked,
+//     dot-leader right-aligned page numbers, three heading levels deep. ─
 const toc = [
   new Paragraph({
     pageBreakBefore: true,
     heading: HeadingLevel.HEADING_1,
     spacing: { after: 200 },
-    children: [new TextRun({ text: 'Table of Contents', font: 'Calibri', size: 36, bold: true, color: NAVY })],
+    children: [new TextRun({ text: 'Table of Contents', font: 'Cambria', size: 36, bold: true, color: NAVY })],
   }),
   new Paragraph({
     spacing: { after: 240 },
     children: [new TextRun({
-      text: 'Every entry below is a live link. Use Ctrl + Click to jump to any section.',
-      font: 'Calibri', size: 20, italics: true, color: INK_LIGHT,
+      text: 'Entries are hyperlinked. Use Ctrl + Click in Word or a compatible reader to jump to any section. Page numbers are authoritative.',
+      font: 'Cambria', size: 20, italics: true, color: INK_LIGHT,
     })],
   }),
-  ...TOC_ENTRIES.map(tocEntry),
+  new TableOfContents('Table of Contents', {
+    hyperlink: true,
+    headingStyleRange: '1-3',
+    rightTabStop: 9360,
+    entryAndPageNumberSeparator: '\t',
+  }),
 ];
 
 // ─── Executive Summary ─────────────────────────────────────────────
@@ -362,30 +375,30 @@ const exec = [
     T('The public demonstration lives at '),
     new ExternalHyperlink({
       link: 'https://frontend-iota-seven-30.vercel.app',
-      children: [new TextRun({ text: 'frontend-iota-seven-30.vercel.app', font: 'Calibri', size: 22, color: '1B4F72', underline: {} })],
+      children: [new TextRun({ text: 'frontend-iota-seven-30.vercel.app', font: 'Cambria', size: 22, color: '1B4F72', underline: {} })],
     }),
     T(' and is reachable from any browser in any region. The full source code is published at '),
     new ExternalHyperlink({
       link: 'https://github.com/AhmedRaoofuddin/Investment_UAE',
-      children: [new TextRun({ text: 'github.com/AhmedRaoofuddin/Investment_UAE', font: 'Calibri', size: 22, color: '1B4F72', underline: {} })],
+      children: [new TextRun({ text: 'github.com/AhmedRaoofuddin/Investment_UAE', font: 'Cambria', size: 22, color: '1B4F72', underline: {} })],
     }),
     T(' for review by the Ministry\u2019s technical team. The authenticated investor workspace tier sits behind sign-in and adds per-tenant state: watchlists, encrypted connector credentials, notifications and an analytics dashboard designed for analysts inside the Ministry.'),
-  ]),
-  P(T('The platform ingests twenty-four public sources across the MENA region, the Gulf and global technology media, including six native Arabic-language feeds. A six-stage artificial intelligence pipeline detects eight categories of investment signal, scores each company on two independent dimensions, and produces a sourced, auditable pipeline suitable for ministerial review. The interface is fully bilingual in English and Arabic with right-to-left layout, and every signal carries an audit trail linking back to its public source.')),
-  P(T('The case study requested a simple prototype. What is delivered is a pilot-grade platform with safety, testing and compliance primitives appropriate for ministerial use. The deployment resides in Frankfurt today, chosen for rapid iteration during the pilot. A migration to UAE-sovereign infrastructure is documented and requires only an environment change, not a rewrite.')),
+  ], { alignment: AlignmentType.LEFT }),
+  P(T('The platform ingests seventy-six public feeds spanning MENA direct publishers, Arabic-language outlets, global technology media, business wires, sector specialists, founder interviews and primary financial filings. A six-stage artificial intelligence pipeline detects eight categories of investment signal, scores each company on two independent dimensions, and produces a sourced, auditable pipeline suitable for ministerial review. The interface is fully bilingual in English and Arabic with right-to-left layout, and every signal carries an audit trail linking back to its public source.')),
+  P(T('The case study requested a simple prototype. What is delivered is a pilot-grade platform with safety, testing and compliance primitives appropriate for ministerial use. Tenant data at rest resides in Frankfurt (Neon, AWS eu-central-1), the closest European Union data-residency region aligned with the Personal Data Protection Law and a deliberate staging point adjacent to the UAE-sovereign general availability target. The Vercel application layer uses Vercel\u2019s global edge during the pilot; pinning it to Frankfurt (fra1) to match the data tier is a configuration change scheduled for general availability alongside the UAE-sovereign migration. No application rewrite is required at any point on that path.')),
   Eyebrow('Key measures at a glance'),
   buildTable(
     [3000, 6360],
     ['Dimension', 'Delivered'],
     [
-      ['Public data sources surveilled',        'Thirty-five feeds across MENA, Gulf and global technology media, including six native Arabic-language publishers, five founder and executive interview feeds, and six primary financial-announcement sources (SEC EDGAR 8-K and 6-K filings, Business Wire, PR Newswire, GlobeNewswire and ADGM news).'],
+      ['Public data sources surveilled',        'Seventy-six feeds organised across eleven editorial categories: MENA tech and business (twelve), global expansion candidates (seven), Arabic-language publishers (four), sector specialists (six), founder and executive interviews (five), global business wires (six), deep-tech coverage (six), high-volume wires (thirteen), emerging-markets desks (four), vertical press (ten) and primary financial filings (three, covering SEC EDGAR 8-K and 6-K, Business Wire and PR Newswire).'],
       ['Signal categories detected',            'Eight (funding, expansion, partnership, launch, regulatory approval, hiring, mergers and acquisitions, executive change).'],
       ['Scoring dimensions per company',        'Investability from 0 to 100 and UAE alignment from 0 to 100, with a composite score and named breakdown factors.'],
       ['Language support',                      'English and Arabic with right-to-left layout and a bilingual dictionary of approximately four hundred keys.'],
-      ['Workspace connectors',                  'Fifteen paste-API-key connectors across analytics, communications, automation and data sources.'],
+      ['Workspace connectors',                  'Eighteen paste-API-key connectors across analytics, communications, automation and data sources.'],
       ['Automated tests',                       'One hundred and eighty-one deterministic tests covering agents, services, safety taxonomy and end-to-end integration, running in under one second.'],
       ['Safety taxonomy controls',              'Four UAE-grade controls: sanctions and PEP screening, prompt-injection guard, personally identifiable information redactor and regulated-activity refusal.'],
-      ['Data residency for the pilot',          'Frankfurt (AWS eu-central-1 for the database, Vercel fra1 for the application) with a documented migration path to Microsoft Azure UAE North or G42 Core42 for general availability.'],
+      ['Data residency for the pilot',          'Tenant data at rest: Frankfurt (Neon managed PostgreSQL, AWS eu-central-1), the closest EU residency region aligned with UAE PDPL expectations and a deliberate staging point adjacent to the UAE-sovereign GA target. Vercel application layer: Vercel global edge during the pilot, to be pinned to Frankfurt (fra1) at general availability. Migration path to Microsoft Azure UAE North or G42 Core42 documented for GA.'],
     ],
   ),
 ];
@@ -418,7 +431,7 @@ const solution = [
   H3('Public signal platform'),
   P(T('The public platform presents a live, ranked signal pipeline across every scanned source. It includes a signal feed, a company pipeline with filters and sort, a per-company dossier view, a geo-intelligence map, sector analytics and a methodology page that documents how signals are detected and scored. Every signal links back to its original public source, carries a type tag and strength badge, and is accompanied by a brief rationale that explains why the signal matters.')),
   H3('Investor workspace'),
-  P(T('The workspace adds per-tenant state: watchlists across companies, sectors, regions and keywords; notifications when a signal matches a watchlist entry; a fifteen-connector catalogue that lets a tenant dispatch matches to its own downstream tools; and an analytics dashboard with trend charts, leaderboards, a strength radial and a publisher distribution view. Every tenant-owned row carries a tenant identifier, and every query includes it. Cross-tenant joins are forbidden by convention.')),
+  P(T('The workspace adds per-tenant state: watchlists across companies, sectors, regions and keywords; notifications when a signal matches a watchlist entry; an eighteen-connector catalogue that lets a tenant dispatch matches to its own downstream tools; and an analytics dashboard with trend charts, leaderboards, a strength radial and a publisher distribution view. Every tenant-owned row carries a tenant identifier, and every query includes it. Cross-tenant joins are forbidden by convention.')),
   H3('Daily pipeline delivery'),
   P(T('A daily cron at 06:00 UTC refreshes the pipeline, and a second cron at 07:00 UTC assembles the day\u2019s digest: the top high-conviction companies detected in the last twenty-four hours, ordered by composite score. The digest is created as a notification for every tenant and fans out through every channel the tenant has connected, whether Slack, Microsoft Teams, email, a custom webhook or an in-app inbox entry. Analysts therefore receive the actionable daily pipeline without needing to open the platform.')),
   H3('Bilingual, right-to-left interface'),
@@ -517,7 +530,7 @@ const workspaceSec = [
 
   H2('6.6 Connections'),
   Screenshot('13_workspace_connections_en.png'),
-  Caption('The connections catalogue with fifteen paste-API-key connectors across four categories: analytics, communications, automation and data sources. Every secret is sealed by AES-256-GCM with a per-tenant data encryption key before it touches the database.'),
+  Caption('The connections catalogue with eighteen paste-API-key connectors across four categories: analytics, communications, automation and data sources. Every secret is sealed by AES-256-GCM with a per-tenant data encryption key before it touches the database.'),
 
   H2('6.7 Watchlist'),
   Screenshot('14_workspace_watchlist_en.png'),
@@ -539,9 +552,9 @@ const architecture = [
   Diagram('d4_component.png', 620),
   Caption('System component diagram. The dashed arrow indicates an optional dependency: the Anthropic Claude layer is used to enrich extraction and thesis generation, but the platform produces meaningful output without it.'),
   H2('7.1 Deployment topology'),
-  P(T('The deployment diagram below shows the physical topology of the running platform during the pilot. Both the application and the database reside in Frankfurt. The Vercel Edge point of presence terminates TLS, applies the middleware layer and forwards authenticated requests to the Next.js serverless function, which in turn reaches the FastAPI backend and the Neon database.')),
+  P(T('The deployment diagram below shows the physical topology of the running platform during the pilot. Tenant data at rest resides in Frankfurt (Neon managed PostgreSQL in AWS eu-central-1). The Vercel application layer is served through Vercel\u2019s global edge during the pilot and will be pinned to Frankfurt (fra1) at general availability; the Vercel Edge point of presence terminates TLS, applies the middleware layer and forwards authenticated requests to the Next.js serverless function, which in turn reaches the FastAPI backend and the Neon database.')),
   Diagram('d7_deployment.png', 620),
-  Caption('Deployment diagram. All pilot-tier components reside in Frankfurt. A migration to UAE-sovereign hosting replaces the data tier and the application tier in place; the topology above stays the same.'),
+  Caption('Deployment diagram. The pilot data tier resides in Frankfurt; the Vercel application layer uses Vercel\u2019s global edge and will be region-pinned to Frankfurt at general availability. The migration to UAE-sovereign hosting replaces both tiers in place, and the topology above stays the same.'),
   H2('7.2 Use cases'),
   P(T('The use case diagram below summarises the four primary actors that interact with the platform and the twelve core use cases they exercise. The analyst and the public visitor share the read-only pipeline surfaces; only the analyst has write access to watchlists and connectors. The auditor role is a notional actor today, served by the append-only audit log; a dedicated read-only role will be added for general availability.')),
   Diagram('d8_use_case.png', 620),
@@ -558,7 +571,7 @@ const architecture = [
   P(T('Internationalisation is handled by a lightweight React context provider rather than the heavier next-intl library. This decision was made because we wanted to avoid adding a localised route prefix across the twenty-five pages of the platform. The provider reads a cookie and a localStorage entry, exposes a translation function and the current locale, and sets the language attribute and direction attribute on the HTML element for right-to-left support. It is small, testable and does not impose route-level constraints.')),
   H2('7.2 Backend architecture (FastAPI with async agents)'),
   P(T('The backend is organised as a set of agents and services. Agents implement artificial intelligence logic (embedding, classification, entity extraction, scoring). Services implement input and output and side effects (RSS aggregation, geo enrichment, pipeline cache, the optional Claude wrapper). An orchestrator wires them together.')),
-  P(T('Asynchrony is used where it genuinely helps. The RSS aggregator fetches twenty-four feeds concurrently with a bounded-concurrency asyncio gather, using httpx for HTTP and feedparser for parsing. The Open Graph image enrichment pass runs a second bounded-concurrency fetch against any article that did not embed an image in its feed body, rotating user agents so that publishers who whitelist social-media crawlers (for example Finextra and Bloomberg) still return their image metadata. Classification, entity extraction and scoring are CPU-bound and run in sequence; the pipeline is short enough that per-article parallelisation would not measurably improve wall-clock time.')),
+  P(T('Asynchrony is used where it genuinely helps. The RSS aggregator fans out across seventy-six feeds concurrently with a bounded-concurrency asyncio gather, using httpx for HTTP and feedparser for parsing. The Open Graph image enrichment pass runs a second bounded-concurrency fetch against any article that did not embed an image in its feed body, rotating user agents so that publishers who whitelist social-media crawlers (for example Finextra and Bloomberg) still return their image metadata. Classification, entity extraction and scoring are CPU-bound and run in sequence; the pipeline is short enough that per-article parallelisation would not measurably improve wall-clock time.')),
   P(T('All language model calls pass through a single audited wrapper. This wrapper reads the same environment variable, applies the same timeouts, enforces the same output token budgets, writes the same audit log entry, and is the only place in the codebase allowed to import the Anthropic SDK. Direct SDK use anywhere else is forbidden by convention and enforced by code review. This is a meaningful primitive: it means that if the Ministry wishes to swap Claude for another provider or to apply a different policy, the change is made in one file, not scattered across agents.')),
 ];
 
@@ -594,7 +607,7 @@ const pipelineSec = [
     [720, 2100, 4200, 2340],
     ['Stage', 'Name', 'Responsibility', 'Technology'],
     [
-      ['1', 'RSS aggregation',          'Asynchronous fan-out across thirty-five public feeds covering news wire, business press, Arabic-language publishers, founder and executive interviews, and primary financial filings. Ninety-day rolling window, URL-hash deduplication, bounded-concurrency Open Graph image enrichment with user-agent rotation.', 'httpx, feedparser, lxml'],
+      ['1', 'RSS aggregation',          'Asynchronous fan-out across seventy-six public feeds covering news wires, business press, Arabic-language publishers, founder and executive interviews, sector specialists and primary financial filings. Ninety-day rolling window, URL-hash deduplication, bounded-concurrency Open Graph image enrichment with user-agent rotation.', 'httpx, feedparser, lxml'],
       ['2', 'Entity extraction',        'Company names, headquarters, expansion targets, funding amounts, executives. Regex plus a fifty-city gazetteer, with a fragment filter that rejects clause-level noise.',            'Pure Python, rapidfuzz'],
       ['3', 'Zero-shot classification', 'Each article is labelled as one of eight signal types with confidence and strength. Sixty percent embedding similarity, forty percent keyword regex blend.',                          'sentence-transformers optional, hash fallback'],
       ['4', 'Safety gate',              'Blocks sanctioned entities, queues politically-exposed persons for enhanced due diligence, rejects prompt-injection patterns, redacts personally identifiable information, refuses regulated-activity queries.', 'app/safety'],
@@ -677,7 +690,7 @@ const testingSec = [
 // ─── Section 13: Deployment and Operations ─────────────────────────
 const deploy = [
   H1('13. Deployment, Operations and Residency'),
-  P(T('The platform is deployed today on Vercel in the Frankfurt region (fra1). The database runs on Neon in AWS eu-central-1 (Frankfurt). The deployment choice was driven by rapid iteration during the pilot and by the desire to keep the data within European Union residency while the pilot runs. It is deliberately portable for general availability.')),
+  P(T('The platform is deployed today on Vercel for the application surface and on Neon for the data tier. Tenant data at rest resides in Frankfurt (Neon managed PostgreSQL, AWS eu-central-1). This was the deliberate privacy choice for the pilot: Frankfurt is the closest European Union data-residency region aligned with the UAE Personal Data Protection Law, and a defensible staging point adjacent to the UAE-sovereign general availability target. The Vercel application layer uses Vercel\u2019s global edge routing during the pilot; pinning the application region to Frankfurt (fra1) to match the data tier is a single-line change in \u0060vercel.json\u0060 (\u0060"regions": ["fra1"]\u0060) scheduled for general availability alongside the broader UAE-sovereign migration. The deployment is deliberately portable.')),
   buildTable(
     [3000, 6360],
     ['Surface', 'URL'],
@@ -691,7 +704,7 @@ const deploy = [
   ),
   P(T('Every sign-in, every connector write, every artificial intelligence decision and every state change writes an append-only audit entry. Rate limits are enforced at the edge through the middleware layer. Secrets are never logged in their plaintext form. Deployments require the continuous integration pipeline to pass. There is no direct database access outside the application layer.')),
   H2('13.1 Migration path to UAE-sovereign hosting'),
-  P(T('The deployment is portable by design. The application stack is vanilla Next.js and vanilla FastAPI with a standard PostgreSQL back end. A migration to Microsoft Azure UAE North or G42 Core42 for general availability requires provisioning managed PostgreSQL in the target region, updating the connection string in the environment, redeploying the application containers and pointing the domain to the new edge. No application code changes are required. The Frankfurt residency today is compatible with the UAE Personal Data Protection Law and European General Data Protection Regulation. It is a pilot decision, not a long-term constraint.')),
+  P(T('The deployment is portable by design. The application stack is vanilla Next.js and vanilla FastAPI with a standard PostgreSQL back end. A migration to Microsoft Azure UAE North or G42 Core42 for general availability requires provisioning managed PostgreSQL in the target region, updating the connection string in the environment, redeploying the application containers and pointing the domain to the new edge. No application code changes are required. Pinning the Vercel application region from global edge routing to Frankfurt (fra1) during the same migration window is a single-line configuration change in \u0060vercel.json\u0060. The Frankfurt data residency today is compatible with the UAE Personal Data Protection Law and European General Data Protection Regulation. It is a pilot decision, not a long-term constraint.')),
   H2('13.2 Operational observability'),
   P(T('Beyond the audit log, observability today is limited to platform-native logs and metrics on Vercel and Neon. For general availability this would be supplemented by OpenTelemetry tracing, structured logs exported to Splunk or the Elastic stack, and a real-time metrics dashboard fed by Prometheus or Datadog. These additions are deferred for the pilot and are flagged in the roadmap section.')),
 ];
@@ -712,30 +725,37 @@ const future = [
       ['Analyst feedback loop',                            'Not present',                                  'Thumbs up and thumbs down with reason tags feeding weekly precision reports and adjustable weights.'],
       ['SOC 2 Type II evidence collection',                'Deferred',                                     'Vanta or Drata wiring with a two-quarter observation period.'],
       ['Observability and tracing',                        'Platform-native logs',                         'OpenTelemetry tracing, Splunk or Elastic log export, Prometheus or Datadog metrics.'],
-      ['UAE-sovereign hosting',                            'Frankfurt',                                    'Microsoft Azure UAE North or G42 Core42, subject to procurement.'],
+      ['UAE-sovereign hosting',                            'Data tier in Frankfurt (eu-central-1); Vercel app layer on global edge', 'Microsoft Azure UAE North or G42 Core42, subject to procurement.'],
+      ['Vercel application region pin',                    'Global edge (pilot)',                          'Pinned to Frankfurt (fra1) via "regions": ["fra1"] in vercel.json at the same deploy as the UAE-sovereign migration.'],
       ['Penetration test and cryptographic audit',         'Not performed',                                'External vendor engagement before general availability rollout.'],
     ],
   ),
 ];
 
 // ─── Section 15: Closing note ──────────────────────────────────────
+// Note: the paragraph that contains the two long project URLs is rendered
+// left-aligned rather than justified. A justified line that is forced to
+// break before an unbreakable URL stretches inter-word spacing to fill the
+// line, producing visible gaps. Left alignment keeps the spacing natural.
+// keepNext on the penultimate paragraph keeps the single closing line from
+// being orphaned on a page of its own.
 const closing = [
   H1('15. Closing Note'),
   P([
     T('This document is a pilot delivery, not a commercial or regulatory submission. The work it describes is live today at '),
     new ExternalHyperlink({
       link: 'https://frontend-iota-seven-30.vercel.app',
-      children: [new TextRun({ text: 'frontend-iota-seven-30.vercel.app', font: 'Calibri', size: 22, color: '1B4F72', underline: {} })],
+      children: [new TextRun({ text: 'frontend-iota-seven-30.vercel.app', font: 'Cambria', size: 22, color: '1B4F72', underline: {} })],
     }),
     T(', and the full source code, including the one hundred and eighty-one test suite, is available for inspection at '),
     new ExternalHyperlink({
       link: 'https://github.com/AhmedRaoofuddin/Investment_UAE',
-      children: [new TextRun({ text: 'github.com/AhmedRaoofuddin/Investment_UAE', font: 'Calibri', size: 22, color: '1B4F72', underline: {} })],
+      children: [new TextRun({ text: 'github.com/AhmedRaoofuddin/Investment_UAE', font: 'Cambria', size: 22, color: '1B4F72', underline: {} })],
     }),
     T('. I have been careful to be concrete about what has been shipped and transparent about what has not. The honesty matters more than the marketing, because what the Ministry builds on top of this will be measured against both.'),
-  ]),
-  P(T('If there are aspects of the platform the Ministry wishes to see demonstrated in greater depth, or reviewed by a specific team (security, data protection, procurement, investment operations), I would be glad to arrange that. The shortest path from this document to a decision is a live walk-through, and I would welcome the opportunity to give one.')),
-  P(T('Once again, thank you for the opportunity to respond to this brief.')),
+  ], { alignment: AlignmentType.LEFT }),
+  P(T('If there are aspects of the platform the Ministry wishes to see demonstrated in greater depth, or reviewed by a specific team (security, data protection, procurement, investment operations), I would be glad to arrange that. The shortest path from this document to a decision is a live walk-through, and I would welcome the opportunity to give one. Once again, thank you for the opportunity to respond to this brief.'),
+    { keepLines: true }),
 ];
 
 // ─── Assemble the document ──────────────────────────────────────────
@@ -745,17 +765,17 @@ const doc = new Document({
   description: 'Response to the Ministry of Investment AI Case Study',
   styles: {
     default: {
-      document: { run: { font: 'Calibri', size: 22 } },
+      document: { run: { font: 'Cambria', size: 22 } },
     },
     paragraphStyles: [
       { id: 'Heading1', name: 'Heading 1', basedOn: 'Normal', next: 'Normal', quickFormat: true,
-        run: { font: 'Calibri', size: 36, bold: true, color: NAVY },
+        run: { font: 'Cambria', size: 36, bold: true, color: NAVY },
         paragraph: { spacing: { before: 400, after: 200 }, outlineLevel: 0 } },
       { id: 'Heading2', name: 'Heading 2', basedOn: 'Normal', next: 'Normal', quickFormat: true,
-        run: { font: 'Calibri', size: 26, bold: true, color: NAVY },
+        run: { font: 'Cambria', size: 26, bold: true, color: NAVY },
         paragraph: { spacing: { before: 260, after: 120 }, outlineLevel: 1 } },
       { id: 'Heading3', name: 'Heading 3', basedOn: 'Normal', next: 'Normal', quickFormat: true,
-        run: { font: 'Calibri', size: 22, bold: true, color: NAVY_DARK },
+        run: { font: 'Cambria', size: 22, bold: true, color: NAVY_DARK },
         paragraph: { spacing: { before: 200, after: 80 }, outlineLevel: 2 } },
     ],
   },
@@ -771,8 +791,8 @@ const doc = new Document({
         children: [new Paragraph({
           tabStops: [{ type: TabStopType.RIGHT, position: 9360 }],
           children: [
-            new TextRun({ text: 'InvestUAE Signal Intelligence', font: 'Calibri', size: 18, color: INK_LIGHT }),
-            new TextRun({ text: '\tMinistry of Investment Pilot Delivery', font: 'Calibri', size: 18, color: INK_LIGHT }),
+            new TextRun({ text: 'InvestUAE Signal Intelligence', font: 'Cambria', size: 18, color: INK_LIGHT }),
+            new TextRun({ text: '\tMinistry of Investment Pilot Delivery', font: 'Cambria', size: 18, color: INK_LIGHT }),
           ],
         })],
       }),
@@ -782,10 +802,10 @@ const doc = new Document({
         children: [new Paragraph({
           alignment: AlignmentType.CENTER,
           children: [
-            new TextRun({ text: 'Page ', font: 'Calibri', size: 18, color: INK_LIGHT }),
-            new TextRun({ children: [PageNumber.CURRENT], font: 'Calibri', size: 18, color: INK_LIGHT }),
-            new TextRun({ text: ' of ', font: 'Calibri', size: 18, color: INK_LIGHT }),
-            new TextRun({ children: [PageNumber.TOTAL_PAGES], font: 'Calibri', size: 18, color: INK_LIGHT }),
+            new TextRun({ text: 'Page ', font: 'Cambria', size: 18, color: INK_LIGHT }),
+            new TextRun({ children: [PageNumber.CURRENT], font: 'Cambria', size: 18, color: INK_LIGHT }),
+            new TextRun({ text: ' of ', font: 'Cambria', size: 18, color: INK_LIGHT }),
+            new TextRun({ children: [PageNumber.TOTAL_PAGES], font: 'Cambria', size: 18, color: INK_LIGHT }),
           ],
         })],
       }),
@@ -793,6 +813,7 @@ const doc = new Document({
     children: [
       ...cover,
       ...docControl,
+      ...credentialsSec,
       ...toc,
       ...foreword,
       ...exec,
