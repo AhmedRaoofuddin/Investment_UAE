@@ -2,6 +2,14 @@
 
 // Server action for sign-up — split from the page so the page itself
 // can be a client component (to call useLocale for translated strings).
+//
+// Self-service sign-up is disabled for the pilot. Flip SIGNUP_ENABLED to
+// re-open public registration. The full create-account flow (bcrypt →
+// tenant/user transaction → signIn) stays below so re-enabling is a
+// one-line change, but while the flag is off the action short-circuits
+// to the coming-soon page before touching the DB or creating any rows.
+// Defense in depth: even if a stale form is cached or a bot POSTs here
+// directly, nothing is created.
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -9,7 +17,13 @@ import { signIn } from "@/lib/auth";
 import { db, isDbConfigured } from "@/lib/db";
 import { audit } from "@/lib/audit";
 
+const SIGNUP_ENABLED = false;
+
 export async function doSignUp(formData: FormData) {
+  if (!SIGNUP_ENABLED) {
+    redirect("/auth/signup");
+  }
+
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");

@@ -699,6 +699,12 @@ export const EN: Messages = {
   "auth.signup.submit": "Create workspace",
   "auth.signup.haveAccount": "Already have an account?",
   "auth.signup.signIn": "Sign in →",
+  "auth.signup.comingSoon.badge": "Coming soon",
+  "auth.signup.comingSoon.eyebrow": "Invitation only",
+  "auth.signup.comingSoon.title": "Sign-up is coming soon.",
+  "auth.signup.comingSoon.body": "Invest UAE is currently in a closed pilot. Self-service accounts are disabled while we onboard Ministry teams and select partners. Public sign-up will open once the pilot concludes.",
+  "auth.signup.comingSoon.contact": "For early access enquiries, contact the Ministry of Investment team.",
+  "auth.signup.comingSoon.signInCta": "Already have access? Sign in →",
 
   // ── workspace: connectors page (chrome) ──────────────────────────
   "workspace.connectors.title": "Connect the systems the Ministry already runs on.",
@@ -1493,6 +1499,12 @@ export const AR: Messages = {
   "auth.signup.submit": "إنشاء مساحة العمل",
   "auth.signup.haveAccount": "لديك حساب مسبقًا؟",
   "auth.signup.signIn": "تسجيل الدخول ←",
+  "auth.signup.comingSoon.badge": "قريبًا",
+  "auth.signup.comingSoon.eyebrow": "بدعوة فقط",
+  "auth.signup.comingSoon.title": "التسجيل الذاتي قريبًا.",
+  "auth.signup.comingSoon.body": "منصة الاستثمار في الإمارات حاليًا في مرحلة تجريبية مغلقة. تم تعطيل إنشاء الحسابات الذاتية بينما نُدخل فرق الوزارة وعددًا محدودًا من الشركاء. سيُفتح التسجيل العام بعد انتهاء المرحلة التجريبية.",
+  "auth.signup.comingSoon.contact": "للاستفسار عن الوصول المبكر، تواصل مع فريق وزارة الاستثمار.",
+  "auth.signup.comingSoon.signInCta": "تملك صلاحية الوصول؟ تسجيل الدخول ←",
 
   // ── workspace: connectors page (chrome) ──────────────────────────
   "workspace.connectors.title": "وصِل الأنظمة التي تعمل بها الوزارة.",

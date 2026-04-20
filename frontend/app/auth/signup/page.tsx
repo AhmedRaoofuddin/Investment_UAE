@@ -1,19 +1,11 @@
-// Sign-up page — name + email + password.
+// Sign-up page — currently invitation-only (self-service disabled for the pilot).
 //
-// Server action:
-//   1. Validates input.
-//   2. Rejects duplicate email.
-//   3. Creates a Tenant + User in a single transaction with bcrypt(password).
-//   4. Calls signIn("credentials") which redeems the just-created creds and
-//      sets the session cookie. User lands on /workspace.
+// The UI renders a coming-soon card. The server action in ./actions.ts
+// short-circuits any direct POSTs so the DB is never touched while the
+// SIGNUP_ENABLED flag is off.
 
 import { SignUpForm } from "./SignUpForm";
 
-interface PageProps {
-  searchParams: Promise<{ error?: string }>;
-}
-
-export default async function SignUpPage({ searchParams }: PageProps) {
-  const { error } = await searchParams;
-  return <SignUpForm error={error} />;
+export default function SignUpPage() {
+  return <SignUpForm />;
 }
