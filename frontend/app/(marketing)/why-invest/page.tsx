@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Section, Eyebrow, SerifHeading } from "@/components/ui/primitives";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+import { ConnectivityGlobe } from "@/components/marketing/ConnectivityGlobe";
 
 // Icons mirrored verbatim from the Ministry's own "Investment Opportunities"
 // cards on https://www.investuae.gov.ae/en.
@@ -42,6 +43,10 @@ export default function WhyInvestPage() {
         <p className="mt-6 max-w-2xl text-lg text-ink-500 leading-relaxed">
           {t("whyInvest.subtitle")}
         </p>
+      </Section>
+
+      <Section className="pb-8 md:pb-14">
+        <ConnectivityGlobe />
       </Section>
 
       <Section className="pb-12 md:pb-24">
