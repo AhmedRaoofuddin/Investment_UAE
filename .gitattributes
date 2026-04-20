@@ -1,0 +1,5 @@
+# Exclude generated artifacts from GitHub's language stats (linguist).
+# Files stay in the repo; they just don't count toward the language breakdown.
+
+graphify-out/**      linguist-generated=true
+delivery/*.html      linguist-generated=true
