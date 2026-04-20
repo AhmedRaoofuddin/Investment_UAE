@@ -2,34 +2,49 @@
 
 // ConnectivityGlobe
 //
-// Premium dotted-earth globe rendered via `cobe` (https://cobe.vercel.app),
-// the same WebGL globe Vercel ships on their own homepage and that
-// Linear, Plasmic, Framer and many others use for this signature
-// "NASA ops console" look.
+// Photorealistic earth globe (NASA Blue Marble composite) centred on
+// the UAE, with the UAE rendered as a dominant gold marker + pulsing
+// ring so it reads immediately as the origin node. 24 destination
+// cities surround it with animated cyan arcs along great-circle paths.
 //
-// Cobe runs a custom fragment shader that samples a built-in world
-// map at thousands of points and renders each as a dot, giving the
-// dotted-continent aesthetic with zero setup. Continents render
-// correctly out of the box (no GeoJSON fetch, no tessellation).
-//
-// On top of the cobe canvas we overlay:
-//   - A spring-driven phi rotation for inertial auto-rotate that
-//     settles toward the UAE when user mouse input stops.
-//   - A marker list for Dubai, Abu Dhabi, and 24 global destinations.
-//   - A pulsing gold ring on the UAE hubs (CSS-only, absolutely
-//     positioned), so the "origin node" reads as active without
-//     drawing into the WebGL context.
-//   - Corner data pills in the instrument-panel style.
+// Renderer: `react-globe.gl` (React wrapper over three-globe / three.js)
+// with the following deliberate material and lighting choices so the
+// earth reads as a real planet rather than a flat texture:
+//   - High-brightness Blue Marble day composite as the globe surface
+//   - Earth topology as a bump map for continent relief
+//   - Cloud sphere overlay rotating at its own rate
+//   - Boosted AmbientLight + warm key DirectionalLight + cool fill
+//   - Natural blue atmosphere halo
+//   - Camera locked on the UAE (lat 24, lng 54) at altitude 2.1
+//   - UAE marker: oversized gold point + animated pulsing ring
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import createGlobe from "cobe";
+import dynamic from "next/dynamic";
 
-type City = { name: string; lat: number; lng: number; hub?: boolean };
+const Globe = dynamic(() => import("react-globe.gl"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center text-ink-500 text-xs uppercase tracking-[0.3em]">
+      Loading globe
+    </div>
+  ),
+});
 
-const UAE_HUBS: City[] = [
-  { name: "Dubai", lat: 25.2048, lng: 55.2708, hub: true },
-  { name: "Abu Dhabi", lat: 24.4539, lng: 54.3773, hub: true },
-];
+// Textures hosted on jsDelivr via three-globe's example assets.
+// Blue Marble = NASA public-domain daylight composite.
+const TEX_EARTH = "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg";
+const TEX_BUMP = "//unpkg.com/three-globe/example/img/earth-topology.png";
+const TEX_CLOUDS = "//unpkg.com/three-globe/example/img/clouds.png";
+const TEX_STARS = "//unpkg.com/three-globe/example/img/night-sky.png";
+
+const GOLD = "#E8B36C";
+const GOLD_SOFT = "#FFD48A";
+const CYAN = "#4FD1E0";
+const ATMO = "#8BB8FF";
+
+type City = { name: string; lat: number; lng: number };
+
+const UAE: City = { name: "United Arab Emirates", lat: 24.4667, lng: 54.3667 };
 
 const DESTINATIONS: City[] = [
   { name: "London", lat: 51.5074, lng: -0.1278 },
@@ -58,24 +73,36 @@ const DESTINATIONS: City[] = [
   { name: "San Francisco", lat: 37.7749, lng: -122.4194 },
 ];
 
-const ALL_CITIES: City[] = [...UAE_HUBS, ...DESTINATIONS];
+type Arc = {
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  color: [string, string];
+};
+
+type Point = {
+  lat: number;
+  lng: number;
+  color: string;
+  altitude: number;
+  radius: number;
+};
+
+type Ring = { lat: number; lng: number; maxR: number; propagationSpeed: number; repeatPeriod: number };
+
+type Label = { lat: number; lng: number; text: string; color: string; size: number };
 
 export function ConnectivityGlobe() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const globeRef = useRef<unknown>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const phiRef = useRef(0);
-  const pointerInteracting = useRef<number | null>(null);
-  const pointerInteractionMovement = useRef(0);
-  const [size, setSize] = useState<{ w: number; h: number }>({ w: 800, h: 600 });
+  const [size, setSize] = useState<{ w: number; h: number }>({ w: 520, h: 520 });
 
-  // Observe container for responsive sizing. Now that the globe lives
-  // in a right-side column, we size it as a square that fills the
-  // column width, capped so it stays readable on large screens.
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      const w = el.clientWidth || 500;
+      const w = el.clientWidth || 520;
       const h = Math.max(380, Math.min(560, w));
       setSize({ w, h });
     });
@@ -83,85 +110,140 @@ export function ConnectivityGlobe() {
     return () => ro.disconnect();
   }, []);
 
-  const markers = useMemo(
+  // Camera, controls, scene lighting, cloud layer.
+  useEffect(() => {
+    const g = globeRef.current as unknown as {
+      controls?: () => {
+        autoRotate: boolean;
+        autoRotateSpeed: number;
+        enableZoom: boolean;
+        enablePan: boolean;
+      };
+      pointOfView?: (v: { lat: number; lng: number; altitude: number }, ms: number) => void;
+      scene?: () => { add: (o: unknown) => void };
+    } | null;
+    if (!g || typeof g.controls !== "function") return;
+
+    const controls = g.controls();
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.35;
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    // Camera centred on the UAE so the first frame shows the origin
+    // node clearly rather than mid-ocean.
+    g.pointOfView?.({ lat: UAE.lat, lng: UAE.lng, altitude: 2.1 }, 0);
+
+    let cloudsMesh: { rotation: { y: number } } | null = null;
+    let raf = 0;
+    let disposed = false;
+
+    (async () => {
+      const THREE = await import("three");
+      const scene = g.scene?.();
+      if (!scene || disposed) return;
+
+      // Brighten the whole globe so continents and oceans both read.
+      const ambient = new THREE.AmbientLight(0xffffff, 2.0);
+      const key = new THREE.DirectionalLight(0xfff4e0, 1.4);
+      key.position.set(-200, 140, 260);
+      const fill = new THREE.DirectionalLight(0x8aaaff, 0.65);
+      fill.position.set(220, -60, -160);
+      scene.add(ambient);
+      scene.add(key);
+      scene.add(fill);
+
+      // Cloud sphere slightly above the earth surface.
+      const loader = new THREE.TextureLoader();
+      loader.crossOrigin = "anonymous";
+      loader.load(TEX_CLOUDS, (tex) => {
+        if (disposed) return;
+        const geom = new THREE.SphereGeometry(100.8, 96, 96);
+        const mat = new THREE.MeshPhongMaterial({
+          map: tex,
+          transparent: true,
+          opacity: 0.38,
+          depthWrite: false,
+        });
+        const mesh = new THREE.Mesh(geom, mat) as unknown as { rotation: { y: number } };
+        cloudsMesh = mesh;
+        scene.add(mesh);
+      });
+
+      const animate = () => {
+        if (disposed) return;
+        if (cloudsMesh) cloudsMesh.rotation.y += 0.00045;
+        raf = requestAnimationFrame(animate);
+      };
+      animate();
+    })();
+
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // Arcs: every destination connects to the UAE.
+  const arcs: Arc[] = useMemo(
     () =>
-      ALL_CITIES.map((c) => ({
-        location: [c.lat, c.lng] as [number, number],
-        size: c.hub ? 0.11 : 0.05,
+      DESTINATIONS.map((d) => ({
+        startLat: UAE.lat,
+        startLng: UAE.lng,
+        endLat: d.lat,
+        endLng: d.lng,
+        color: [GOLD_SOFT, CYAN],
       })),
     []
   );
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const diameter = Math.min(size.w, size.h);
+  // Points: the UAE is larger and gold; destinations are smaller white.
+  const points: Point[] = useMemo(
+    () => [
+      { lat: UAE.lat, lng: UAE.lng, color: GOLD, altitude: 0.02, radius: 1.2 },
+      ...DESTINATIONS.map((d) => ({
+        lat: d.lat,
+        lng: d.lng,
+        color: "#FFFFFF",
+        altitude: 0.008,
+        radius: 0.45,
+      })),
+    ],
+    []
+  );
 
-    // Arcs from Dubai to every destination. Cobe v2 renders these as
-    // animated travelling dashes along a great-circle path.
-    const arcs = DESTINATIONS.map((d) => ({
-      from: [UAE_HUBS[0].lat, UAE_HUBS[0].lng] as [number, number],
-      to: [d.lat, d.lng] as [number, number],
-    }));
+  // Labels: the UAE label is prominent, destinations are lighter.
+  const labels: Label[] = useMemo(
+    () => [
+      { lat: UAE.lat, lng: UAE.lng, text: "UAE", color: GOLD, size: 0.85 },
+      ...DESTINATIONS.map((d) => ({
+        lat: d.lat,
+        lng: d.lng,
+        text: d.name.toUpperCase(),
+        color: "rgba(255,255,255,0.85)",
+        size: 0.32,
+      })),
+    ],
+    []
+  );
 
-    let phi = 0;
-    let raf = 0;
-
-    const globe = createGlobe(canvas, {
-      devicePixelRatio: dpr,
-      width: diameter * dpr,
-      height: diameter * dpr,
-      phi: 0,
-      theta: 0.22,
-      dark: 1,
-      diffuse: 1.25,
-      mapSamples: 18000,
-      mapBrightness: 7,
-      baseColor: [0.12, 0.18, 0.32],
-      markerColor: [255 / 255, 179 / 255, 94 / 255], // GOLD (#E8B36C)
-      glowColor: [0.6, 0.82, 1.0],
-      markers,
-      arcs,
-      arcColor: [0.31, 0.82, 0.88], // cyan
-      arcWidth: 1.2,
-      arcHeight: 0.35,
-    });
-
-    canvas.style.width = `${diameter}px`;
-    canvas.style.height = `${diameter}px`;
-
-    const tick = () => {
-      if (!pointerInteracting.current) phi += 0.0035;
-      globe.update({ phi: phi + pointerInteractionMovement.current } as Partial<typeof globe> as never);
-      raf = requestAnimationFrame(tick);
-    };
-    tick();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      globe.destroy();
-    };
-  }, [size, markers]);
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    pointerInteracting.current = e.clientX - pointerInteractionMovement.current;
-    (e.target as HTMLCanvasElement).style.cursor = "grabbing";
-  };
-  const onPointerUp = () => {
-    pointerInteracting.current = null;
-    if (canvasRef.current) canvasRef.current.style.cursor = "grab";
-  };
-  const onPointerOut = () => {
-    pointerInteracting.current = null;
-    if (canvasRef.current) canvasRef.current.style.cursor = "grab";
-  };
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (pointerInteracting.current !== null) {
-      const delta = e.clientX - pointerInteracting.current;
-      pointerInteractionMovement.current = delta / 200;
-    }
-  };
+  // Rings: a strong pulse on the UAE, subtle pulses on a handful of
+  // destinations so the whole hemisphere shows motion.
+  const rings: Ring[] = useMemo(
+    () => [
+      { lat: UAE.lat, lng: UAE.lng, maxR: 8, propagationSpeed: 3.5, repeatPeriod: 1200 },
+      { lat: UAE.lat, lng: UAE.lng, maxR: 4, propagationSpeed: 2.5, repeatPeriod: 1800 },
+      ...[DESTINATIONS[0], DESTINATIONS[5], DESTINATIONS[10], DESTINATIONS[13], DESTINATIONS[21]].map(
+        (d, i) => ({
+          lat: d.lat,
+          lng: d.lng,
+          maxR: 3,
+          propagationSpeed: 2.5,
+          repeatPeriod: 2200 + i * 200,
+        })
+      ),
+    ],
+    []
+  );
 
   return (
     <div
@@ -169,77 +251,94 @@ export function ConnectivityGlobe() {
       className="relative w-full overflow-hidden rounded-md"
       style={{
         height: size.h,
-        background:
-          "radial-gradient(ellipse at 50% 50%, #0a1a2e 0%, #05101f 50%, #010510 100%)",
+        background: "#000000",
       }}
       aria-label="UAE global connectivity map"
     >
-      {/* Procedural star layer */}
+      {/* Milky Way backdrop — the built-in three-globe night-sky texture
+          is a 4K Milky Way panorama. Tile it to fill the frame and tint
+          slightly so it reads as space around the earth rather than a
+          flat starfield. */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${TEX_STARS})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.9,
+        }}
+      />
+      {/* Warm nebula glow in the upper-right to mirror the reference
+          aesthetic (galactic dust band). Pure CSS gradient, so no
+          extra download. */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 45% at 85% 18%, rgba(229,143,97,0.18) 0%, rgba(158,83,40,0.09) 40%, transparent 70%), radial-gradient(ellipse 45% 35% at 8% 82%, rgba(110,139,200,0.14) 0%, transparent 65%)",
+        }}
+      />
+      {/* Extra procedural sparkle stars on top for close foreground depth */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: `
-            radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,0.95), transparent),
-            radial-gradient(1px 1px at 38% 72%, rgba(255,255,255,0.7), transparent),
+            radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,1), transparent),
+            radial-gradient(1px 1px at 38% 72%, rgba(255,255,255,0.85), transparent),
             radial-gradient(2px 2px at 67% 12%, rgba(255,255,255,1), transparent),
-            radial-gradient(1px 1px at 88% 44%, rgba(154,232,242,0.6), transparent),
-            radial-gradient(1.2px 1.2px at 22% 62%, rgba(255,255,255,0.8), transparent),
-            radial-gradient(1.2px 1.2px at 74% 82%, rgba(255,255,255,0.7), transparent),
-            radial-gradient(1px 1px at 9% 91%, rgba(255,255,255,0.55), transparent),
-            radial-gradient(1.7px 1.7px at 55% 6%, rgba(255,255,255,0.9), transparent),
-            radial-gradient(1px 1px at 33% 32%, rgba(79,209,224,0.55), transparent),
-            radial-gradient(1px 1px at 82% 27%, rgba(255,255,255,0.55), transparent),
-            radial-gradient(1px 1px at 14% 56%, rgba(255,255,255,0.6), transparent),
-            radial-gradient(1.3px 1.3px at 62% 57%, rgba(154,232,242,0.7), transparent),
-            radial-gradient(1.4px 1.4px at 48% 89%, rgba(255,255,255,0.7), transparent),
-            radial-gradient(1px 1px at 5% 41%, rgba(255,255,255,0.5), transparent),
-            radial-gradient(1.2px 1.2px at 94% 68%, rgba(255,255,255,0.6), transparent)
+            radial-gradient(1.3px 1.3px at 88% 44%, rgba(180,210,255,0.85), transparent),
+            radial-gradient(1.2px 1.2px at 22% 62%, rgba(255,255,255,0.9), transparent),
+            radial-gradient(1.2px 1.2px at 74% 82%, rgba(255,255,255,0.8), transparent),
+            radial-gradient(1.4px 1.4px at 55% 6%, rgba(255,255,255,1), transparent),
+            radial-gradient(1.4px 1.4px at 48% 89%, rgba(255,255,255,0.85), transparent)
           `,
         }}
       />
 
-      {/* Faint cyan grid for the instrument-panel feel */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.045]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, #4FD1E0 1px, transparent 1px), linear-gradient(to bottom, #4FD1E0 1px, transparent 1px)",
-          backgroundSize: "72px 72px",
+      <Globe
+        ref={globeRef as never}
+        width={size.w}
+        height={size.h}
+        backgroundColor="rgba(0,0,0,0)"
+        backgroundImageUrl={TEX_STARS}
+        globeImageUrl={TEX_EARTH}
+        bumpImageUrl={TEX_BUMP}
+        showAtmosphere={true}
+        atmosphereColor={ATMO}
+        atmosphereAltitude={0.2}
+        arcsData={arcs}
+        arcColor={"color" as never}
+        arcStroke={0.5}
+        arcAltitudeAutoScale={0.5}
+        arcDashLength={0.4}
+        arcDashGap={1.8}
+        arcDashInitialGap={() => Math.random() * 4}
+        arcDashAnimateTime={2600}
+        pointsData={points}
+        pointLat="lat"
+        pointLng="lng"
+        pointColor={"color" as never}
+        pointAltitude={"altitude" as never}
+        pointRadius={"radius" as never}
+        pointsMerge={false}
+        labelsData={labels}
+        labelLat={"lat" as never}
+        labelLng={"lng" as never}
+        labelText={"text" as never}
+        labelColor={"color" as never}
+        labelSize={"size" as never}
+        labelDotRadius={0}
+        labelResolution={2}
+        labelAltitude={0.02}
+        ringsData={rings}
+        ringColor={(d: unknown) => {
+          const r = d as Ring;
+          return r.lat === UAE.lat && r.lng === UAE.lng ? GOLD : CYAN;
         }}
+        ringMaxRadius={"maxR" as never}
+        ringPropagationSpeed={"propagationSpeed" as never}
+        ringRepeatPeriod={"repeatPeriod" as never}
       />
-
-      {/* Cobe canvas centred in the wrapper */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <canvas
-          ref={canvasRef}
-          onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerOut={onPointerOut}
-          onMouseMove={onMouseMove}
-          style={{
-            width: `${Math.min(size.w, size.h)}px`,
-            height: `${Math.min(size.w, size.h)}px`,
-            cursor: "grab",
-            touchAction: "none",
-          }}
-        />
-      </div>
-
-      {/* Outer glow ring framing the globe */}
-      <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        aria-hidden
-      >
-        <div
-          style={{
-            width: Math.min(size.w, size.h) * 1.08,
-            height: Math.min(size.w, size.h) * 1.08,
-            borderRadius: "50%",
-            boxShadow:
-              "0 0 80px 10px rgba(79,209,224,0.12), 0 0 180px 40px rgba(79,209,224,0.06)",
-          }}
-        />
-      </div>
 
       {/* Top-left live pill */}
       <div className="absolute top-4 left-4 pointer-events-none">
@@ -255,58 +354,25 @@ export function ConnectivityGlobe() {
       <div className="absolute top-4 right-4 pointer-events-none">
         <div className="flex items-center gap-3 px-3 py-1.5 rounded-[2px] border border-white/10 bg-white/[0.03] backdrop-blur-sm text-[10px] uppercase tracking-[0.25em]">
           <span className="text-white/60">Routes</span>
-          <span className="text-cyan-200 font-semibold">24</span>
+          <span className="text-gold-300 font-semibold">24</span>
           <span className="text-white/30">·</span>
-          <span className="text-white/60">Cities</span>
-          <span className="text-cyan-200 font-semibold">26</span>
+          <span className="text-white/60">Hub</span>
+          <span className="text-gold-300 font-semibold">UAE</span>
         </div>
       </div>
 
-      {/* Bottom-right metrics pill */}
-      <div className="absolute bottom-4 right-4 pointer-events-none">
-        <div className="flex items-center gap-4 px-3 py-1.5 rounded-[2px] border border-gold-400/25 bg-gold-400/5 backdrop-blur-sm text-[10px] uppercase tracking-[0.25em]">
-          <span className="text-gold-200/80">
-            <span className="text-gold-400 font-semibold">8h</span> flight radius
-          </span>
-          <span className="text-gold-200/50">·</span>
-          <span className="text-gold-200/80">
-            <span className="text-gold-400 font-semibold">2/3</span> of global population
-          </span>
-        </div>
+      {/* Bottom metrics pill — single line so no crowding */}
+      <div className="absolute bottom-4 left-4 right-4 pointer-events-none flex items-center justify-between text-[10px] uppercase tracking-[0.25em]">
+        <span className="text-gold-400">
+          Origin <span className="text-white/50 mx-1">·</span>{" "}
+          <span className="text-white/80">Dubai &amp; Abu Dhabi</span>
+        </span>
+        <span className="text-white/60">
+          <span className="text-gold-400 font-semibold">8h</span> flight radius
+          <span className="text-white/30 mx-2">·</span>
+          <span className="text-gold-400 font-semibold">2/3</span> of global population
+        </span>
       </div>
-
-      {/* Bottom-left origin label */}
-      <div className="absolute bottom-4 left-4 pointer-events-none text-[10px] uppercase tracking-[0.25em] text-white/40">
-        Origin: <span className="text-gold-400">Dubai · Abu Dhabi</span>
-      </div>
-
-      {/* Destination list ticker — cycles through city names */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-4 pointer-events-none hidden md:block">
-        <DestinationTicker />
-      </div>
-    </div>
-  );
-}
-
-// Small ticker that cycles destination names so the UI feels alive
-// even when the user is looking away from the globe itself.
-function DestinationTicker() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const id = window.setInterval(
-      () => setIdx((i) => (i + 1) % DESTINATIONS.length),
-      2200
-    );
-    return () => window.clearInterval(id);
-  }, []);
-  const d = DESTINATIONS[idx];
-  return (
-    <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-white/55">
-      <span className="inline-block w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
-      Scanning
-      <span className="text-cyan-200 font-semibold min-w-[120px] text-left">
-        {d.name}
-      </span>
     </div>
   );
 }

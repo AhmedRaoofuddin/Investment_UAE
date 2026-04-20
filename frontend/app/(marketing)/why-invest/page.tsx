@@ -37,9 +37,9 @@ export default function WhyInvestPage() {
     <>
       <Section className="pt-10 md:pt-16 pb-10 md:pb-16">
         <Eyebrow>{t("whyInvest.eyebrow")}</Eyebrow>
-        <div className="mt-4 grid gap-10 lg:grid-cols-[1fr_520px] lg:items-start">
+        <div className="mt-6 grid gap-10 lg:gap-16 lg:grid-cols-[1fr_520px] lg:items-center">
           {/* Left column: headline, subtitle, destinations list */}
-          <div>
+          <div className="lg:pr-4 lg:py-4">
             <SerifHeading level={1} className="max-w-2xl">
               {t("whyInvest.title")}
             </SerifHeading>
