@@ -40,7 +40,7 @@ const TEX_STARS = "//unpkg.com/three-globe/example/img/night-sky.png";
 const GOLD = "#E8B36C";
 const GOLD_SOFT = "#FFD48A";
 const CYAN = "#4FD1E0";
-const ATMO = "#8BB8FF";
+const ATMO = "#9DB4FF"; // slight purple-blue shift to match reference
 
 type City = { name: string; lat: number; lng: number };
 
@@ -91,7 +91,6 @@ type Point = {
 
 type Ring = { lat: number; lng: number; maxR: number; propagationSpeed: number; repeatPeriod: number };
 
-type Label = { lat: number; lng: number; text: string; color: string; size: number };
 
 export function ConnectivityGlobe() {
   const globeRef = useRef<unknown>(null);
@@ -103,7 +102,12 @@ export function ConnectivityGlobe() {
     if (!el) return;
     const ro = new ResizeObserver(() => {
       const w = el.clientWidth || 520;
-      const h = Math.max(380, Math.min(560, w));
+      // On mobile (narrow container), keep the globe a proper square
+      // matching the width. On tablet+ cap at 560 so it doesn't
+      // dominate the grid cell. Minimum 320 so it stays visible on
+      // the smallest supported phones without eating the whole
+      // viewport height.
+      const h = Math.max(320, Math.min(560, w));
       setSize({ w, h });
     });
     ro.observe(el);
@@ -211,17 +215,15 @@ export function ConnectivityGlobe() {
     []
   );
 
-  // Labels: the UAE label is prominent, destinations are lighter.
-  const labels: Label[] = useMemo(
+  // HTML pin markers — each becomes an absolutely-positioned div
+  // tracked to its lat/lng as the globe rotates. Dubai + Abu Dhabi are
+  // "hub" pins (larger, gold); the 24 destinations are smaller cyan
+  // pins with a text label above the dot.
+  const htmlPins = useMemo(
     () => [
-      { lat: UAE.lat, lng: UAE.lng, text: "UAE", color: GOLD, size: 0.85 },
-      ...DESTINATIONS.map((d) => ({
-        lat: d.lat,
-        lng: d.lng,
-        text: d.name.toUpperCase(),
-        color: "rgba(255,255,255,0.85)",
-        size: 0.32,
-      })),
+      { lat: 25.2048, lng: 55.2708, name: "Dubai", hub: true as const },
+      { lat: 24.4539, lng: 54.3773, name: "Abu Dhabi", hub: true as const },
+      ...DESTINATIONS.map((d) => ({ lat: d.lat, lng: d.lng, name: d.name })),
     ],
     []
   );
@@ -308,12 +310,12 @@ export function ConnectivityGlobe() {
         atmosphereAltitude={0.2}
         arcsData={arcs}
         arcColor={"color" as never}
-        arcStroke={0.5}
-        arcAltitudeAutoScale={0.5}
-        arcDashLength={0.4}
-        arcDashGap={1.8}
+        arcStroke={0.7}
+        arcAltitudeAutoScale={0.55}
+        arcDashLength={0.35}
+        arcDashGap={1.4}
         arcDashInitialGap={() => Math.random() * 4}
-        arcDashAnimateTime={2600}
+        arcDashAnimateTime={2400}
         pointsData={points}
         pointLat="lat"
         pointLng="lng"
@@ -321,15 +323,34 @@ export function ConnectivityGlobe() {
         pointAltitude={"altitude" as never}
         pointRadius={"radius" as never}
         pointsMerge={false}
-        labelsData={labels}
-        labelLat={"lat" as never}
-        labelLng={"lng" as never}
-        labelText={"text" as never}
-        labelColor={"color" as never}
-        labelSize={"size" as never}
-        labelDotRadius={0}
-        labelResolution={2}
-        labelAltitude={0.02}
+        // Real HTML pins — rendered as absolutely-positioned divs that
+        // track their lat/lng as the globe rotates. This is what gives
+        // the "map marker" feel instead of tiny 3D sprites.
+        htmlElementsData={htmlPins}
+        htmlLat={"lat" as never}
+        htmlLng={"lng" as never}
+        htmlAltitude={0.02}
+        htmlElement={(d: unknown) => {
+          const pin = d as { name: string; hub?: boolean };
+          const el = document.createElement("div");
+          el.style.pointerEvents = "none";
+          el.style.transform = "translate(-50%, -100%)";
+          el.style.display = "flex";
+          el.style.flexDirection = "column";
+          el.style.alignItems = "center";
+          if (pin.hub) {
+            el.innerHTML = `
+              <div style="color:#E8B36C;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,0.9),0 0 12px rgba(232,179,94,0.6);margin-bottom:2px;white-space:nowrap;">${pin.name}</div>
+              <div style="width:10px;height:10px;border-radius:50%;background:#E8B36C;box-shadow:0 0 0 3px rgba(232,179,94,0.35),0 0 16px rgba(232,179,94,0.8);"></div>
+            `;
+          } else {
+            el.innerHTML = `
+              <div style="color:rgba(255,255,255,0.95);font-size:9.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.95);margin-bottom:1px;white-space:nowrap;">${pin.name}</div>
+              <div style="width:5px;height:5px;border-radius:50%;background:#4FD1E0;box-shadow:0 0 0 2px rgba(79,209,224,0.3),0 0 8px rgba(79,209,224,0.7);"></div>
+            `;
+          }
+          return el;
+        }}
         ringsData={rings}
         ringColor={(d: unknown) => {
           const r = d as Ring;
@@ -340,37 +361,37 @@ export function ConnectivityGlobe() {
         ringRepeatPeriod={"repeatPeriod" as never}
       />
 
-      {/* Top-left live pill */}
-      <div className="absolute top-4 left-4 pointer-events-none">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] border border-cyan-400/25 bg-cyan-400/5 backdrop-blur-sm">
+      {/* Top-left live pill — shortened on mobile */}
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 pointer-events-none">
+        <div className="flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-[2px] border border-cyan-400/25 bg-cyan-400/5 backdrop-blur-sm">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-[10px] uppercase tracking-[0.25em] text-cyan-200/80">
-            Connectivity Graph · Live
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-cyan-200/80">
+            <span className="hidden sm:inline">Connectivity Graph · </span>Live
           </span>
         </div>
       </div>
 
-      {/* Top-right route counter */}
-      <div className="absolute top-4 right-4 pointer-events-none">
-        <div className="flex items-center gap-3 px-3 py-1.5 rounded-[2px] border border-white/10 bg-white/[0.03] backdrop-blur-sm text-[10px] uppercase tracking-[0.25em]">
+      {/* Top-right route counter — compact on mobile */}
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 pointer-events-none">
+        <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1 sm:py-1.5 rounded-[2px] border border-white/10 bg-white/[0.03] backdrop-blur-sm text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em]">
           <span className="text-white/60">Routes</span>
           <span className="text-gold-300 font-semibold">24</span>
-          <span className="text-white/30">·</span>
-          <span className="text-white/60">Hub</span>
-          <span className="text-gold-300 font-semibold">UAE</span>
+          <span className="text-white/30 hidden sm:inline">·</span>
+          <span className="text-white/60 hidden sm:inline">Hub</span>
+          <span className="text-gold-300 font-semibold hidden sm:inline">UAE</span>
         </div>
       </div>
 
-      {/* Bottom metrics pill — single line so no crowding */}
-      <div className="absolute bottom-4 left-4 right-4 pointer-events-none flex items-center justify-between text-[10px] uppercase tracking-[0.25em]">
+      {/* Bottom status bar — stacks on mobile to avoid overlap */}
+      <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 pointer-events-none flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-1 sm:gap-0 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em]">
         <span className="text-gold-400">
-          Origin <span className="text-white/50 mx-1">·</span>{" "}
+          Origin <span className="text-white/50 mx-1">·</span>
           <span className="text-white/80">Dubai &amp; Abu Dhabi</span>
         </span>
         <span className="text-white/60">
-          <span className="text-gold-400 font-semibold">8h</span> flight radius
+          <span className="text-gold-400 font-semibold">8h</span> radius
           <span className="text-white/30 mx-2">·</span>
-          <span className="text-gold-400 font-semibold">2/3</span> of global population
+          <span className="text-gold-400 font-semibold">2/3</span> global pop.
         </span>
       </div>
     </div>

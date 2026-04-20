@@ -101,6 +101,13 @@ export default function WhyInvestPage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    UAE Hubs
+                  </div>
+                  <div className="font-semibold text-navy-800">Dubai</div>
+                  <div className="font-semibold text-navy-800">Abu Dhabi</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     Gulf
                   </div>
                   <div>Riyadh</div>
