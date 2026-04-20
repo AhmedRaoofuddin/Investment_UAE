@@ -35,11 +35,11 @@ export default function WhyInvestPage() {
   const { t } = useLocale();
   return (
     <>
-      <Section className="pt-10 md:pt-16 pb-10 md:pb-16">
+      <Section className="pt-10 md:pt-16 pb-10 md:pb-16 overflow-x-hidden">
         <Eyebrow>{t("whyInvest.eyebrow")}</Eyebrow>
-        <div className="mt-6 grid gap-10 lg:gap-16 lg:grid-cols-[1fr_520px] lg:items-center">
+        <div className="mt-6 grid gap-10 lg:gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-start">
           {/* Left column: headline, subtitle, destinations list */}
-          <div className="lg:pr-4 lg:py-4">
+          <div className="min-w-0">
             <SerifHeading level={1} className="max-w-2xl">
               {t("whyInvest.title")}
             </SerifHeading>
@@ -117,8 +117,9 @@ export default function WhyInvestPage() {
             </div>
           </div>
 
-          {/* Right column: globe */}
-          <div className="w-full">
+          {/* Right column: globe — min-w-0 + lg:sticky so it stays
+              visible as the left column scrolls on very tall text. */}
+          <div className="w-full min-w-0 lg:sticky lg:top-24">
             <ConnectivityGlobe />
           </div>
         </div>

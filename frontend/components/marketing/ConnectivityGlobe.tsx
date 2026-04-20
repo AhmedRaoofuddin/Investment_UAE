@@ -95,20 +95,23 @@ type Ring = { lat: number; lng: number; maxR: number; propagationSpeed: number; 
 export function ConnectivityGlobe() {
   const globeRef = useRef<unknown>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState<{ w: number; h: number }>({ w: 520, h: 520 });
+  // Start at a small size that cannot overflow a phone viewport.
+  // The ResizeObserver will scale it up on wider containers as soon
+  // as it fires. Previous default of 520 caused a one-frame horizontal
+  // scroll on 375 / 390 / 412 px devices before the observer ran.
+  const [size, setSize] = useState<{ w: number; h: number }>({ w: 320, h: 320 });
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      const w = el.clientWidth || 520;
-      // On mobile (narrow container), keep the globe a proper square
-      // matching the width. On tablet+ cap at 560 so it doesn't
-      // dominate the grid cell. Minimum 320 so it stays visible on
-      // the smallest supported phones without eating the whole
-      // viewport height.
-      const h = Math.max(320, Math.min(560, w));
-      setSize({ w, h });
+      // Never exceed the parent's clientWidth, and cap on desktop so
+      // the globe doesn't bloat in the grid cell. Minimum 300 so it
+      // stays visible on the smallest supported phones.
+      const w = Math.max(0, el.clientWidth);
+      if (w === 0) return;
+      const clamped = Math.max(300, Math.min(480, w));
+      setSize({ w: clamped, h: clamped });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -250,10 +253,13 @@ export function ConnectivityGlobe() {
   return (
     <div
       ref={wrapRef}
-      className="relative w-full overflow-hidden rounded-md"
+      className="relative w-full max-w-full overflow-hidden rounded-md"
       style={{
         height: size.h,
         background: "#000000",
+        // Cap inline width so a stale initial size can never push the
+        // wrapper past the parent on first paint.
+        maxWidth: "100%",
       }}
       aria-label="UAE global connectivity map"
     >
