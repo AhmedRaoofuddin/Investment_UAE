@@ -26,6 +26,7 @@ const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center text-ink-500 text-xs uppercase tracking-[0.3em]">
+      {/* Deliberately untranslated — this is a pre-hydration loading sliver. */}
       Loading globe
     </div>
   ),
@@ -126,7 +127,7 @@ type Ring = { lat: number; lng: number; maxR: number; propagationSpeed: number; 
 
 
 export function ConnectivityGlobe() {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const globeRef = useRef<unknown>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const sceneInitDone = useRef(false);
@@ -280,7 +281,7 @@ export function ConnectivityGlobe() {
         background: "#000000",
         maxWidth: "100%",
       }}
-      aria-label="UAE global connectivity map"
+      aria-label={t("whyInvest.globe.ariaLabel")}
     >
       {/* Milky Way backdrop — the built-in three-globe night-sky texture
           is a 4K Milky Way panorama. Tile it to fill the frame and tint
@@ -366,28 +367,33 @@ export function ConnectivityGlobe() {
         htmlElementsData={htmlPins}
         htmlLat={"lat" as never}
         htmlLng={"lng" as never}
-        htmlAltitude={0.005}
+        htmlAltitude={0}
         htmlTransitionDuration={150}
         htmlElement={(d: unknown) => {
           const pin = d as { name: string; hub?: boolean };
           const isAr = locale === "ar";
           const displayName = isAr ? (CITY_NAMES_AR[pin.name] ?? pin.name) : pin.name;
+
+          // Anchor is a zero-size container at the exact lat/lng.
+          // Dot is centred on the anchor; label floats to the right (so
+          // coastal cities like SF don't appear to have labels in the
+          // ocean when the element is drawn above the anchor).
           const el = document.createElement("div");
           el.style.pointerEvents = "none";
-          el.style.transform = "translate(-50%, -100%)";
-          el.style.display = "flex";
-          el.style.flexDirection = "column";
-          el.style.alignItems = "center";
-          el.dir = "ltr"; // pin labels always LTR regardless of page locale
+          el.style.position = "relative";
+          el.style.width = "0";
+          el.style.height = "0";
+          el.dir = "ltr"; // labels are always LTR even on Arabic page
+
           if (pin.hub) {
             el.innerHTML = `
-              <div style="color:#E8B36C;font-size:10px;font-weight:700;letter-spacing:0.08em;text-shadow:0 1px 3px rgba(0,0,0,0.95);margin-bottom:2px;white-space:nowrap;">${displayName}</div>
-              <div style="width:6px;height:6px;border-radius:50%;background:#E8B36C;box-shadow:0 0 0 2px rgba(232,179,94,0.3),0 0 8px rgba(232,179,94,0.7);"></div>
+              <div style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:7px;height:7px;border-radius:50%;background:#E8B36C;box-shadow:0 0 0 2px rgba(232,179,94,0.35),0 0 10px rgba(232,179,94,0.8);"></div>
+              <div style="position:absolute;left:8px;top:0;transform:translateY(-50%);color:#E8B36C;font-size:10px;font-weight:700;letter-spacing:0.08em;text-shadow:0 1px 3px rgba(0,0,0,0.95),0 0 2px rgba(0,0,0,0.9);white-space:nowrap;">${displayName}</div>
             `;
           } else {
             el.innerHTML = `
-              <div style="color:rgba(255,255,255,0.92);font-size:8.5px;font-weight:600;letter-spacing:0.05em;text-shadow:0 1px 2px rgba(0,0,0,0.95);margin-bottom:1px;white-space:nowrap;">${displayName}</div>
-              <div style="width:3px;height:3px;border-radius:50%;background:#4FD1E0;box-shadow:0 0 0 1.5px rgba(79,209,224,0.25),0 0 5px rgba(79,209,224,0.6);"></div>
+              <div style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:4px;height:4px;border-radius:50%;background:#4FD1E0;box-shadow:0 0 0 1.5px rgba(79,209,224,0.3),0 0 6px rgba(79,209,224,0.65);"></div>
+              <div style="position:absolute;left:6px;top:0;transform:translateY(-50%);color:rgba(255,255,255,0.92);font-size:8.5px;font-weight:600;letter-spacing:0.05em;text-shadow:0 1px 2px rgba(0,0,0,0.95),0 0 2px rgba(0,0,0,0.9);white-space:nowrap;">${displayName}</div>
             `;
           }
           return el;
@@ -407,7 +413,8 @@ export function ConnectivityGlobe() {
         <div className="flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-[2px] border border-cyan-400/25 bg-cyan-400/5 backdrop-blur-sm">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
           <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-cyan-200/80">
-            <span className="hidden sm:inline">Connectivity Graph · </span>Live
+            <span className="hidden sm:inline">{t("whyInvest.globe.connectivityGraph")} · </span>
+            {t("whyInvest.globe.live")}
           </span>
         </div>
       </div>
@@ -415,24 +422,24 @@ export function ConnectivityGlobe() {
       {/* Top-right route counter — compact on mobile */}
       <div className="absolute top-3 right-3 sm:top-4 sm:right-4 pointer-events-none">
         <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1 sm:py-1.5 rounded-[2px] border border-white/10 bg-white/[0.03] backdrop-blur-sm text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-          <span className="text-white/60">Routes</span>
+          <span className="text-white/60">{t("whyInvest.globe.routes")}</span>
           <span className="text-gold-300 font-semibold">24</span>
           <span className="text-white/30 hidden sm:inline">·</span>
-          <span className="text-white/60 hidden sm:inline">Hub</span>
-          <span className="text-gold-300 font-semibold hidden sm:inline">UAE</span>
+          <span className="text-white/60 hidden sm:inline">{t("whyInvest.globe.hub")}</span>
+          <span className="text-gold-300 font-semibold hidden sm:inline">{t("whyInvest.globe.uae")}</span>
         </div>
       </div>
 
       {/* Bottom status bar — stacks on mobile to avoid overlap */}
       <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 pointer-events-none flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-1 sm:gap-0 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em]">
         <span className="text-gold-400">
-          Origin <span className="text-white/50 mx-1">·</span>
-          <span className="text-white/80">Dubai &amp; Abu Dhabi</span>
+          {t("whyInvest.globe.origin")} <span className="text-white/50 mx-1">·</span>
+          <span className="text-white/80">{t("whyInvest.globe.dubaiAbuDhabi")}</span>
         </span>
         <span className="text-white/60">
-          <span className="text-gold-400 font-semibold">8h</span> radius
+          <span className="text-gold-400 font-semibold">{t("whyInvest.globe.radius")}</span>
           <span className="text-white/30 mx-2">·</span>
-          <span className="text-gold-400 font-semibold">2/3</span> global pop.
+          <span className="text-gold-400 font-semibold">{t("whyInvest.globe.population")}</span>
         </span>
       </div>
     </div>
