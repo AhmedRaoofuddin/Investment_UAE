@@ -591,9 +591,72 @@ async def extract_signals_and_companies(
     return company_list
 
 
+def _deterministic_dossier(company: Company) -> Tuple[str, List[str], List[str]]:
+    """Compose a conservative investment dossier without the LLM.
+
+    Used as a fallback whenever the Anthropic call is unavailable or
+    returns empty output (missing API key, depleted credit, rate-limit
+    exhaustion, model-side parse failure). Guarantees that every
+    company dossier shows something useful to a Ministry reviewer
+    rather than the "Thesis pending" placeholder, while being
+    explicit that the generative layer was not consulted so the
+    reviewer can adjust confidence accordingly.
+    """
+    hq = "an unspecified location"
+    if company.headquarters and company.headquarters.country:
+        hq = company.headquarters.country
+    sectors = (
+        ", ".join(s.value for s in company.sectors)
+        if company.sectors else "multiple sectors"
+    )
+    n_sig = len(company.signals)
+    sig_word = "signal" if n_sig == 1 else "signals"
+    types_seen = sorted({s.type.value.replace("_", " ") for s in company.signals})
+    types_sentence = (
+        f" Signal types detected include {', '.join(types_seen)}."
+        if types_seen else ""
+    )
+    thesis = (
+        f"{company.name} is active in {sectors}, with headquarters in {hq}. "
+        f"The pipeline has captured {n_sig} {sig_word} across the rolling "
+        f"ninety-day window, carrying an investability score of "
+        f"{company.investability_score:.0f}/100 and a UAE alignment score of "
+        f"{company.uae_alignment_score:.0f}/100.{types_sentence} "
+        "This dossier was compiled deterministically from the signal data; "
+        "the generative enrichment layer was not available at time of "
+        "rendering, so qualitative synthesis has been deferred."
+    )
+    risks = [
+        (
+            "Signal volume is limited; low-N captures should be validated "
+            "manually against the supporting sources before qualification."
+            if n_sig < 3
+            else "Signal density is adequate but source breadth should be reviewed manually."
+        ),
+        (
+            "Alignment score reflects geographic and sector proxies; direct "
+            "FDI intent has not been confirmed by the pipeline."
+        ),
+    ]
+    next_actions = [
+        (
+            f"Validate {company.name}'s UAE presence or regional expansion "
+            "intent through direct outreach or corporate filings."
+        ),
+        "Review the supporting sources cited in the Signal Timeline.",
+        "Re-run the dossier once the generative enrichment layer is reachable.",
+    ]
+    return (thesis, risks, next_actions)
+
+
 async def deep_dive_company(company: Company) -> Tuple[str, List[str], List[str]]:
     """Generate a deep investment dossier for one company."""
     settings = get_settings()
+    # If the Anthropic key is not configured at all, skip the network
+    # call entirely and compose a deterministic dossier. This is the
+    # same path used when the LLM call fails for any other reason.
+    if not settings.anthropic_api_key:
+        return _deterministic_dossier(company)
     client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
     payload = {
@@ -649,18 +712,23 @@ async def deep_dive_company(company: Company) -> Tuple[str, List[str], List[str]
             await asyncio.sleep(min(20.0, 4.0 * attempt + random.uniform(0, 1.5)))
         except Exception as exc:  # noqa: BLE001
             logger.warning("claude_deepdive_failed err=%s", exc)
-            return ("", [], [])
+            return _deterministic_dossier(company)
 
     if text is None:
-        return ("", [], [])
+        return _deterministic_dossier(company)
 
     try:
         parsed = _safe_load_json(text)
     except json.JSONDecodeError:
-        return ("", [], [])
+        return _deterministic_dossier(company)
 
-    return (
-        str(parsed.get("thesis", "")),
-        [str(r) for r in (parsed.get("risks") or [])][:6],
-        [str(a) for a in (parsed.get("next_actions") or [])][:6],
-    )
+    thesis = str(parsed.get("thesis", "")).strip()
+    risks = [str(r) for r in (parsed.get("risks") or [])][:6]
+    next_actions = [str(a) for a in (parsed.get("next_actions") or [])][:6]
+    # If the model responded but the thesis slot came back empty (model
+    # refused or produced an unusable structure), fall back to the
+    # deterministic dossier rather than surface a blank "pending" state
+    # to the Ministry reviewer.
+    if not thesis:
+        return _deterministic_dossier(company)
+    return (thesis, risks, next_actions)

@@ -196,13 +196,33 @@ async def company_detail(company_id: str) -> CompanyDeepDive:
         raise HTTPException(status_code=404, detail="Company not found")
 
     thesis, risks, next_actions = await deep_dive_company(company)
+    # Build related-signals with URL-level deduplication. Two different
+    # companies can extract the SAME underlying article (e.g. "Aramco
+    # backs Via Separations" surfaces against both the Aramco and the
+    # Via Separations company records, each with its own signal id).
+    # Deduplicating by signal.id alone misses this case; URL dedup
+    # collapses them so a reviewer never sees the same headline twice.
     related: list[Signal] = []
+    seen_keys: set[str] = set()
+    # Also skip signals whose URL already appears in the subject
+    # company's own signal list — those would be shown twice on the
+    # dossier page (once in Signal Timeline, once in Related).
+    for s in company.signals:
+        seen_keys.add((s.source.url or s.source.source_name or s.id).lower())
     if company.sectors:
         for c in companies:
             if c.id == company.id:
                 continue
-            if any(s in company.sectors for s in c.sectors):
-                related.extend(c.signals[:2])
+            if not any(s in company.sectors for s in c.sectors):
+                continue
+            for s in c.signals[:3]:
+                key = (s.source.url or s.source.source_name or s.id).lower()
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                related.append(s)
+                if len(related) >= 8:
+                    break
             if len(related) >= 8:
                 break
 
