@@ -51,70 +51,69 @@ export default function WhyInvestPage() {
               <div className="text-[10px] uppercase tracking-[0.25em] text-ink-500/70">
                 {t("whyInvest.conn.label")}
               </div>
-              {/* Region grid — dir=ltr keeps column order UAE Hubs → Gulf →
-                  Europe → Asia regardless of page locale. City names are
-                  international proper nouns kept in Latin script. */}
-              <div dir="ltr" className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-3 md:gap-x-6 md:gap-y-4 text-sm text-ink-500">
+              {/* Region grid — inherits page direction so Arabic city names
+                  render right-to-left under Arabic locale. */}
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-3 md:gap-x-6 md:gap-y-4 text-sm text-ink-500">
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     {t("whyInvest.conn.uaeHubs")}
                   </div>
-                  <div className="font-semibold text-navy-800">Dubai</div>
-                  <div className="font-semibold text-navy-800">Abu Dhabi</div>
+                  <div className="font-semibold text-navy-800">{t("whyInvest.city.dubai")}</div>
+                  <div className="font-semibold text-navy-800">{t("whyInvest.city.abuDhabi")}</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     {t("whyInvest.conn.gulf")}
                   </div>
-                  <div>Riyadh</div>
-                  <div>Doha</div>
+                  <div>{t("whyInvest.city.riyadh")}</div>
+                  <div>{t("whyInvest.city.doha")}</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     {t("whyInvest.conn.europe")}
                   </div>
-                  <div>London</div>
-                  <div>Paris</div>
-                  <div>Frankfurt</div>
-                  <div>Zurich</div>
-                  <div>Istanbul</div>
+                  <div>{t("whyInvest.city.london")}</div>
+                  <div>{t("whyInvest.city.paris")}</div>
+                  <div>{t("whyInvest.city.frankfurt")}</div>
+                  <div>{t("whyInvest.city.zurich")}</div>
+                  <div>{t("whyInvest.city.istanbul")}</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     {t("whyInvest.conn.asiaPacific")}
                   </div>
-                  <div>Singapore</div>
-                  <div>Hong Kong</div>
-                  <div>Tokyo</div>
-                  <div>Shanghai</div>
-                  <div>Seoul</div>
-                  <div>Sydney</div>
+                  <div>{t("whyInvest.city.singapore")}</div>
+                  <div>{t("whyInvest.city.hongKong")}</div>
+                  <div>{t("whyInvest.city.tokyo")}</div>
+                  <div>{t("whyInvest.city.shanghai")}</div>
+                  <div>{t("whyInvest.city.seoul")}</div>
+                  <div>{t("whyInvest.city.sydney")}</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     {t("whyInvest.conn.subcontinent")}
                   </div>
-                  <div>Mumbai</div>
-                  <div>Delhi</div>
-                  <div>Bangalore</div>
+                  <div>{t("whyInvest.city.mumbai")}</div>
+                  <div>{t("whyInvest.city.delhi")}</div>
+                  <div>{t("whyInvest.city.bangalore")}</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     {t("whyInvest.conn.americas")}
                   </div>
-                  <div>New York</div>
-                  <div>San Francisco</div>
-                  <div>Toronto</div>
-                  <div>São Paulo</div>
+                  <div>{t("whyInvest.city.newYork")}</div>
+                  <div>{t("whyInvest.city.sanFrancisco")}</div>
+                  <div>{t("whyInvest.city.toronto")}</div>
+                  <div>{t("whyInvest.city.saoPaulo")}</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     {t("whyInvest.conn.africa")}
                   </div>
-                  <div>Cape Town</div>
-                  <div>Nairobi</div>
-                  <div>Lagos</div>
-                  <div>Cairo</div>
+                  <div>{t("whyInvest.city.capeTown")}</div>
+                  <div>{t("whyInvest.city.nairobi")}</div>
+                  <div>{t("whyInvest.city.lagos")}</div>
+                  <div>{t("whyInvest.city.cairo")}</div>
                 </div>
               </div>
             </div>
