@@ -40,7 +40,7 @@ const TEX_STARS = "//unpkg.com/three-globe/example/img/night-sky.png";
 const GOLD = "#E8B36C";
 const GOLD_SOFT = "#FFD48A";
 const CYAN = "#4FD1E0";
-const ATMO = "#9DB4FF"; // slight purple-blue shift to match reference
+const ATMO = "#B89CFF"; // deep purple glow to match the galaxy reference
 
 type City = { name: string; lat: number; lng: number };
 
@@ -110,7 +110,7 @@ export function ConnectivityGlobe() {
       // stays visible on the smallest supported phones.
       const w = Math.max(0, el.clientWidth);
       if (w === 0) return;
-      const clamped = Math.max(300, Math.min(480, w));
+      const clamped = Math.max(300, Math.min(540, w));
       setSize({ w: clamped, h: clamped });
     });
     ro.observe(el);
@@ -272,14 +272,23 @@ export function ConnectivityGlobe() {
           opacity: 0.9,
         }}
       />
-      {/* Warm nebula glow in the upper-right to mirror the reference
-          aesthetic (galactic dust band). Pure CSS gradient, so no
-          extra download. */}
+      {/* Purple / magenta nebula dust band on the right, deep blue
+          nebula on the left. Matches the galaxy reference image —
+          earth in the centre with a purple halo and a pink/magenta
+          galactic trail washing past it. Pure CSS gradients. */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 60% 45% at 85% 18%, rgba(229,143,97,0.18) 0%, rgba(158,83,40,0.09) 40%, transparent 70%), radial-gradient(ellipse 45% 35% at 8% 82%, rgba(110,139,200,0.14) 0%, transparent 65%)",
+            "radial-gradient(ellipse 65% 55% at 88% 28%, rgba(186,110,240,0.28) 0%, rgba(138,60,200,0.14) 35%, transparent 70%), radial-gradient(ellipse 50% 40% at 6% 78%, rgba(90,110,220,0.18) 0%, transparent 65%), radial-gradient(ellipse 35% 25% at 92% 65%, rgba(230,120,200,0.14) 0%, transparent 60%)",
+        }}
+      />
+      {/* Ambient purple atmospheric haze under the whole frame */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 100% 70% at 50% 55%, rgba(120,70,200,0.10) 0%, transparent 70%)",
         }}
       />
       {/* Extra procedural sparkle stars on top for close foreground depth */}

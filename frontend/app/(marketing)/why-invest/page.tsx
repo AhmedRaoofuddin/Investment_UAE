@@ -37,7 +37,7 @@ export default function WhyInvestPage() {
     <>
       <Section className="pt-10 md:pt-16 pb-10 md:pb-16 overflow-x-hidden">
         <Eyebrow>{t("whyInvest.eyebrow")}</Eyebrow>
-        <div className="mt-6 grid gap-10 lg:gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-start">
+        <div className="mt-6 grid gap-10 lg:gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] lg:items-start">
           {/* Left column: headline, subtitle, destinations list */}
           <div className="min-w-0">
             <SerifHeading level={1} className="max-w-2xl">
@@ -51,7 +51,25 @@ export default function WhyInvestPage() {
               <div className="text-[10px] uppercase tracking-[0.25em] text-ink-500/70">
                 Live connectivity &middot; 24 destinations from Dubai &amp; Abu Dhabi
               </div>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm text-ink-500">
+              {/* Region list: the UAE Hubs column is promoted to first
+                  position so the origin reads immediately. 4 columns on
+                  large screens compresses the vertical footprint so the
+                  globe column doesn't leave a sea of whitespace. */}
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4 text-sm text-ink-500">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    UAE Hubs
+                  </div>
+                  <div className="font-semibold text-navy-800">Dubai</div>
+                  <div className="font-semibold text-navy-800">Abu Dhabi</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    Gulf
+                  </div>
+                  <div>Riyadh</div>
+                  <div>Doha</div>
+                </div>
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     Europe
@@ -98,20 +116,6 @@ export default function WhyInvestPage() {
                   <div>Nairobi</div>
                   <div>Lagos</div>
                   <div>Cairo</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    UAE Hubs
-                  </div>
-                  <div className="font-semibold text-navy-800">Dubai</div>
-                  <div className="font-semibold text-navy-800">Abu Dhabi</div>
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
-                    Gulf
-                  </div>
-                  <div>Riyadh</div>
-                  <div>Doha</div>
                 </div>
               </div>
             </div>
