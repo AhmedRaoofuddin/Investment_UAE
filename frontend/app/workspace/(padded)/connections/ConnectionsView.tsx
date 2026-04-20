@@ -284,8 +284,38 @@ function ConnectorModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const isUpdate = !!existing;
+
+  function validateFields(): string | null {
+    // Required check — for updates, secret fields are optional (keep existing).
+    for (const f of connector.fields) {
+      if (!f.required) continue;
+      const val = (values[f.name] ?? "").trim();
+      if (!val && !(isUpdate && f.secret)) {
+        return t("workspace.connectors.errMissing", "Please fill the required fields.");
+      }
+    }
+    // URL format check — must be a valid https:// URL.
+    for (const f of connector.fields) {
+      if (f.type !== "url") continue;
+      const val = (values[f.name] ?? "").trim();
+      if (!val) continue;
+      try {
+        const parsed = new URL(val);
+        if (parsed.protocol !== "https:") throw new Error("not https");
+      } catch {
+        return t(
+          "workspace.connectors.errInvalidUrl",
+          "One or more URL fields must be a valid HTTPS address (must start with https://).",
+        );
+      }
+    }
+    return null;
+  }
 
   async function handleSave() {
+    const validationErr = validateFields();
+    if (validationErr) { setError(validationErr); return; }
     setSubmitting(true);
     setError(null);
     try {
@@ -299,7 +329,9 @@ function ConnectorModal({
         setError(
           data.error === "missing_required_fields"
             ? t("workspace.connectors.errMissing", "Please fill the required fields.")
-            : data.error ?? t("workspace.connectors.errGeneric", "Something went wrong. Try again."),
+            : data.error === "invalid_url_fields"
+              ? t("workspace.connectors.errInvalidUrl", "One or more URL fields must be a valid HTTPS address (must start with https://).")
+              : data.error ?? t("workspace.connectors.errGeneric", "Something went wrong. Try again."),
         );
         return;
       }
@@ -307,7 +339,7 @@ function ConnectorModal({
       setTimeout(() => {
         window.location.reload();
       }, 600);
-    } catch (e) {
+    } catch {
       setError(t("workspace.connectors.errNetwork", "Network error. Check your connection."));
     } finally {
       setSubmitting(false);
@@ -355,6 +387,30 @@ function ConnectorModal({
               </p>
             </div>
           </div>
+
+          {/* Manage banner — shown when updating an existing active connection */}
+          {isUpdate && (
+            <div className="mb-5 rounded-[3px] border border-emerald-200 bg-emerald-50 p-4 flex items-start gap-2.5">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-900 space-y-0.5">
+                <p className="font-semibold">
+                  {t("workspace.connectors.statusActive", "Connected")}
+                  {existing?.updatedAt && (
+                    <> · {t("workspace.connectors.connectedSince", "Connected since")}{" "}
+                    {new Date(existing.updatedAt).toLocaleDateString()}</>
+                  )}
+                </p>
+                <p className="text-emerald-700">
+                  {t("workspace.connectors.secretUpdateHint", "Leave any encrypted field blank to keep its current stored value.")}
+                </p>
+                {existing?.lastError && (
+                  <p className="mt-1 text-red-700">
+                    {t("workspace.connectors.lastError", "Last error")}: {existing.lastError}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Setup steps */}
           <div className="mb-5 rounded-[3px] border border-gold-100 bg-gold-50 p-4">
@@ -405,12 +461,16 @@ function ConnectorModal({
                   />
                 ) : (
                   <input
-                    type={field.secret ? "password" : field.type === "url" ? "url" : "text"}
+                    type={field.secret ? "password" : "text"}
                     value={values[field.name] ?? ""}
                     onChange={(e) =>
                       setValues((v) => ({ ...v, [field.name]: e.target.value }))
                     }
-                    placeholder={field.placeholder}
+                    placeholder={
+                      isUpdate && field.secret
+                        ? "••••••••  (unchanged)"
+                        : field.placeholder
+                    }
                     className="w-full h-10 px-3 text-sm rounded-[3px] border border-line bg-white focus:outline-none focus:border-navy-300 font-mono"
                   />
                 )}

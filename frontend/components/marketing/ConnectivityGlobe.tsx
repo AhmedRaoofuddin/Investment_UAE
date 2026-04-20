@@ -40,7 +40,7 @@ const TEX_STARS = "//unpkg.com/three-globe/example/img/night-sky.png";
 const GOLD = "#E8B36C";
 const GOLD_SOFT = "#FFD48A";
 const CYAN = "#4FD1E0";
-const ATMO = "#B89CFF"; // deep purple glow to match the galaxy reference
+const ATMO = "#7B22D9"; // vivid violet — matches the galaxy reference purple halo
 
 type City = { name: string; lat: number; lng: number };
 
@@ -110,7 +110,7 @@ export function ConnectivityGlobe() {
       // stays visible on the smallest supported phones.
       const w = Math.max(0, el.clientWidth);
       if (w === 0) return;
-      const clamped = Math.max(300, Math.min(540, w));
+      const clamped = Math.max(300, Math.min(620, w));
       setSize({ w: clamped, h: clamped });
     });
     ro.observe(el);
@@ -272,23 +272,25 @@ export function ConnectivityGlobe() {
           opacity: 0.9,
         }}
       />
-      {/* Purple / magenta nebula dust band on the right, deep blue
-          nebula on the left. Matches the galaxy reference image —
-          earth in the centre with a purple halo and a pink/magenta
-          galactic trail washing past it. Pure CSS gradients. */}
+      {/* Purple / magenta nebula dust — vivid violet on the right,
+          deep blue-violet on the left. Tuned to match the reference
+          image: Earth centred with a bright purple atmospheric halo
+          and a magenta galactic trail washing across the frame. */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 65% 55% at 88% 28%, rgba(186,110,240,0.28) 0%, rgba(138,60,200,0.14) 35%, transparent 70%), radial-gradient(ellipse 50% 40% at 6% 78%, rgba(90,110,220,0.18) 0%, transparent 65%), radial-gradient(ellipse 35% 25% at 92% 65%, rgba(230,120,200,0.14) 0%, transparent 60%)",
+            "radial-gradient(ellipse 70% 60% at 90% 25%, rgba(140,40,230,0.42) 0%, rgba(100,20,200,0.22) 40%, transparent 72%), radial-gradient(ellipse 55% 45% at 4% 80%, rgba(70,60,220,0.28) 0%, transparent 68%), radial-gradient(ellipse 40% 30% at 94% 68%, rgba(220,80,200,0.22) 0%, transparent 62%)",
         }}
       />
-      {/* Ambient purple atmospheric haze under the whole frame */}
+      {/* Ambient vivid-purple atmospheric haze that rings the whole
+          globe — this is what produces the glowing violet halo seen
+          in the reference image. */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 100% 70% at 50% 55%, rgba(120,70,200,0.10) 0%, transparent 70%)",
+            "radial-gradient(ellipse 110% 80% at 50% 52%, rgba(100,30,200,0.20) 0%, rgba(80,20,180,0.10) 40%, transparent 70%)",
         }}
       />
       {/* Extra procedural sparkle stars on top for close foreground depth */}
@@ -318,7 +320,7 @@ export function ConnectivityGlobe() {
         bumpImageUrl={TEX_BUMP}
         showAtmosphere={true}
         atmosphereColor={ATMO}
-        atmosphereAltitude={0.2}
+        atmosphereAltitude={0.28}
         arcsData={arcs}
         arcColor={"color" as never}
         arcStroke={0.18}

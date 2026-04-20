@@ -52,13 +52,48 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "connector_not_ready" }, { status: 400 });
   }
 
-  // Validate required fields.
+  const isUpdate = !!(await db().connection.findFirst({
+    where: { tenantId: session.tenantId, provider: spec.id, status: "ACTIVE" },
+    select: { id: true },
+  }));
+
+  // Validate required fields — when updating an existing connection, secret
+  // fields are optional (leave blank to keep the stored ciphertext).
   const missing = spec.fields
-    .filter((f) => f.required && !body.fields?.[f.name])
+    .filter((f) => {
+      if (!f.required) return false;
+      const val = (body.fields?.[f.name] ?? "").trim();
+      if (val) return false; // provided
+      // For an update, secret fields may be omitted to keep existing value.
+      if (isUpdate && f.secret) return false;
+      return true;
+    })
     .map((f) => f.name);
   if (missing.length > 0) {
     return NextResponse.json(
       { error: "missing_required_fields", fields: missing },
+      { status: 400 },
+    );
+  }
+
+  // Validate URL fields — must be a parseable HTTPS URL.
+  const invalidUrls: string[] = [];
+  for (const field of spec.fields) {
+    if (field.type !== "url") continue;
+    const val = (body.fields?.[field.name] ?? "").trim();
+    if (!val) continue; // empty optional URL — fine
+    try {
+      const parsed = new URL(val);
+      if (parsed.protocol !== "https:") {
+        invalidUrls.push(field.name);
+      }
+    } catch {
+      invalidUrls.push(field.name);
+    }
+  }
+  if (invalidUrls.length > 0) {
+    return NextResponse.json(
+      { error: "invalid_url_fields", fields: invalidUrls },
       { status: 400 },
     );
   }

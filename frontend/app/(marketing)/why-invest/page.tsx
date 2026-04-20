@@ -37,17 +37,17 @@ export default function WhyInvestPage() {
     <>
       <Section className="pt-10 md:pt-16 pb-10 md:pb-16 overflow-x-hidden">
         <Eyebrow>{t("whyInvest.eyebrow")}</Eyebrow>
-        <div className="mt-6 grid gap-10 lg:gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] lg:items-start">
+        <div className="mt-6 grid gap-8 md:gap-10 lg:gap-14 md:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] md:items-start">
           {/* Left column: headline, subtitle, destinations list */}
           <div className="min-w-0">
             <SerifHeading level={1} className="max-w-2xl">
               {t("whyInvest.title")}
             </SerifHeading>
-            <p className="mt-6 max-w-xl text-lg text-ink-500 leading-relaxed">
+            <p className="mt-4 md:mt-6 max-w-xl text-base md:text-lg text-ink-500 leading-relaxed">
               {t("whyInvest.subtitle")}
             </p>
 
-            <div className="mt-10">
+            <div className="mt-7 md:mt-10">
               <div className="text-[10px] uppercase tracking-[0.25em] text-ink-500/70">
                 Live connectivity &middot; 24 destinations from Dubai &amp; Abu Dhabi
               </div>
@@ -55,7 +55,7 @@ export default function WhyInvestPage() {
                   position so the origin reads immediately. 4 columns on
                   large screens compresses the vertical footprint so the
                   globe column doesn't leave a sea of whitespace. */}
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4 text-sm text-ink-500">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-3 md:gap-x-6 md:gap-y-4 text-sm text-ink-500">
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
                     UAE Hubs
@@ -121,9 +121,10 @@ export default function WhyInvestPage() {
             </div>
           </div>
 
-          {/* Right column: globe — min-w-0 + lg:sticky so it stays
-              visible as the left column scrolls on very tall text. */}
-          <div className="w-full min-w-0 lg:sticky lg:top-24">
+          {/* Right column: globe — on mobile it renders full-width below
+              text; on md+ it sits alongside the text and sticks as the
+              left column scrolls. */}
+          <div className="w-full min-w-0 md:sticky md:top-24">
             <ConnectivityGlobe />
           </div>
         </div>
