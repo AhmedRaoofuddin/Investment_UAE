@@ -18,7 +18,7 @@
 //   - Camera locked on the UAE (lat 24, lng 54) at altitude 2.1
 //   - UAE marker: oversized gold point + animated pulsing ring
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -95,19 +95,15 @@ type Ring = { lat: number; lng: number; maxR: number; propagationSpeed: number; 
 export function ConnectivityGlobe() {
   const globeRef = useRef<unknown>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  // Start at a small size that cannot overflow a phone viewport.
-  // The ResizeObserver will scale it up on wider containers as soon
-  // as it fires. Previous default of 520 caused a one-frame horizontal
-  // scroll on 375 / 390 / 412 px devices before the observer ran.
+  const sceneInitDone = useRef(false);
+  const rafRef = useRef(0);
+
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 320, h: 320 });
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      // Never exceed the parent's clientWidth, and cap on desktop so
-      // the globe doesn't bloat in the grid cell. Minimum 300 so it
-      // stays visible on the smallest supported phones.
       const w = Math.max(0, el.clientWidth);
       if (w === 0) return;
       const clamped = Math.max(300, Math.min(780, w));
@@ -117,9 +113,13 @@ export function ConnectivityGlobe() {
     return () => ro.disconnect();
   }, []);
 
-  // Camera, controls, scene lighting, cloud layer.
-  useEffect(() => {
-    const g = globeRef.current as unknown as {
+  // Called by react-globe.gl once Three.js is fully initialised.
+  // This is the only reliable place to set controls / camera / lighting.
+  const handleGlobeReady = useCallback(() => {
+    if (sceneInitDone.current) return;
+    sceneInitDone.current = true;
+
+    const g = globeRef.current as {
       controls?: () => {
         autoRotate: boolean;
         autoRotateSpeed: number;
@@ -129,28 +129,25 @@ export function ConnectivityGlobe() {
       pointOfView?: (v: { lat: number; lng: number; altitude: number }, ms: number) => void;
       scene?: () => { add: (o: unknown) => void };
     } | null;
-    if (!g || typeof g.controls !== "function") return;
+    if (!g) return;
 
-    const controls = g.controls();
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.5;
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    // Camera centred on Dubai (lat 25.2, lng 55.3) so the UAE reads as
-    // the clear origin node. Altitude 2.2 keeps Europe, Africa, the
-    // Gulf and South Asia all in frame while the UAE stays prominent.
+    // Lock camera on Dubai, show a full hemisphere of destinations.
     g.pointOfView?.({ lat: 25.2, lng: 55.3, altitude: 2.2 }, 0);
 
-    let cloudsMesh: { rotation: { y: number } } | null = null;
-    let raf = 0;
-    let disposed = false;
+    const controls = g.controls?.();
+    if (controls) {
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.6;
+      controls.enableZoom = false;
+      controls.enablePan = false;
+    }
 
+    // Lighting + cloud layer (async — Three.js is already loaded by the globe).
     (async () => {
       const THREE = await import("three");
       const scene = g.scene?.();
-      if (!scene || disposed) return;
+      if (!scene) return;
 
-      // Brighten the whole globe so continents and oceans both read.
       const ambient = new THREE.AmbientLight(0xffffff, 2.0);
       const key = new THREE.DirectionalLight(0xfff4e0, 1.4);
       key.position.set(-200, 140, 260);
@@ -160,11 +157,9 @@ export function ConnectivityGlobe() {
       scene.add(key);
       scene.add(fill);
 
-      // Cloud sphere slightly above the earth surface.
       const loader = new THREE.TextureLoader();
       loader.crossOrigin = "anonymous";
       loader.load(TEX_CLOUDS, (tex) => {
-        if (disposed) return;
         const geom = new THREE.SphereGeometry(100.8, 96, 96);
         const mat = new THREE.MeshPhongMaterial({
           map: tex,
@@ -173,23 +168,19 @@ export function ConnectivityGlobe() {
           depthWrite: false,
         });
         const mesh = new THREE.Mesh(geom, mat) as unknown as { rotation: { y: number } };
-        cloudsMesh = mesh;
         scene.add(mesh);
+
+        const spin = () => {
+          mesh.rotation.y += 0.00045;
+          rafRef.current = requestAnimationFrame(spin);
+        };
+        spin();
       });
-
-      const animate = () => {
-        if (disposed) return;
-        if (cloudsMesh) cloudsMesh.rotation.y += 0.00045;
-        raf = requestAnimationFrame(animate);
-      };
-      animate();
     })();
-
-    return () => {
-      disposed = true;
-      cancelAnimationFrame(raf);
-    };
   }, []);
+
+  // Clean up cloud RAF on unmount.
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
   // Arcs: every destination connects to the UAE.
   const arcs: Arc[] = useMemo(
@@ -313,6 +304,7 @@ export function ConnectivityGlobe() {
         ref={globeRef as never}
         width={size.w}
         height={size.h}
+        onGlobeReady={handleGlobeReady}
         backgroundColor="rgba(0,0,0,0)"
         backgroundImageUrl={TEX_STARS}
         globeImageUrl={TEX_EARTH}
