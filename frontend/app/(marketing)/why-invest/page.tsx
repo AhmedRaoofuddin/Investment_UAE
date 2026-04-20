@@ -35,18 +35,86 @@ export default function WhyInvestPage() {
   const { t } = useLocale();
   return (
     <>
-      <Section className="pt-10 md:pt-16 pb-8 md:pb-12">
+      <Section className="pt-10 md:pt-16 pb-10 md:pb-16">
         <Eyebrow>{t("whyInvest.eyebrow")}</Eyebrow>
-        <SerifHeading level={1} className="mt-4 max-w-4xl">
-          {t("whyInvest.title")}
-        </SerifHeading>
-        <p className="mt-6 max-w-2xl text-lg text-ink-500 leading-relaxed">
-          {t("whyInvest.subtitle")}
-        </p>
-      </Section>
+        <div className="mt-4 grid gap-10 lg:grid-cols-[1fr_520px] lg:items-start">
+          {/* Left column: headline, subtitle, destinations list */}
+          <div>
+            <SerifHeading level={1} className="max-w-2xl">
+              {t("whyInvest.title")}
+            </SerifHeading>
+            <p className="mt-6 max-w-xl text-lg text-ink-500 leading-relaxed">
+              {t("whyInvest.subtitle")}
+            </p>
 
-      <Section className="pb-8 md:pb-14">
-        <ConnectivityGlobe />
+            <div className="mt-10">
+              <div className="text-[10px] uppercase tracking-[0.25em] text-ink-500/70">
+                Live connectivity &middot; 24 destinations from Dubai &amp; Abu Dhabi
+              </div>
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm text-ink-500">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    Europe
+                  </div>
+                  <div>London</div>
+                  <div>Paris</div>
+                  <div>Frankfurt</div>
+                  <div>Zurich</div>
+                  <div>Istanbul</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    Asia &amp; Pacific
+                  </div>
+                  <div>Singapore</div>
+                  <div>Hong Kong</div>
+                  <div>Tokyo</div>
+                  <div>Shanghai</div>
+                  <div>Seoul</div>
+                  <div>Sydney</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    Subcontinent
+                  </div>
+                  <div>Mumbai</div>
+                  <div>Delhi</div>
+                  <div>Bangalore</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    Americas
+                  </div>
+                  <div>New York</div>
+                  <div>San Francisco</div>
+                  <div>Toronto</div>
+                  <div>São Paulo</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    Africa
+                  </div>
+                  <div>Cape Town</div>
+                  <div>Nairobi</div>
+                  <div>Lagos</div>
+                  <div>Cairo</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold-700 mb-1">
+                    Gulf
+                  </div>
+                  <div>Riyadh</div>
+                  <div>Doha</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right column: globe */}
+          <div className="w-full">
+            <ConnectivityGlobe />
+          </div>
+        </div>
       </Section>
 
       <Section className="pb-12 md:pb-24">

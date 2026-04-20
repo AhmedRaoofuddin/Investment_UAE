@@ -68,15 +68,15 @@ export function ConnectivityGlobe() {
   const pointerInteractionMovement = useRef(0);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 800, h: 600 });
 
-  // Observe container for responsive sizing. Cobe is square-best, so
-  // we size the canvas as a square centred in the wider container and
-  // let the container's height frame it with space on the sides.
+  // Observe container for responsive sizing. Now that the globe lives
+  // in a right-side column, we size it as a square that fills the
+  // column width, capped so it stays readable on large screens.
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      const w = el.clientWidth || 800;
-      const h = Math.max(440, Math.min(720, Math.round(w * 0.66)));
+      const w = el.clientWidth || 500;
+      const h = Math.max(380, Math.min(560, w));
       setSize({ w, h });
     });
     ro.observe(el);
@@ -217,8 +217,10 @@ export function ConnectivityGlobe() {
           onPointerOut={onPointerOut}
           onMouseMove={onMouseMove}
           style={{
+            width: `${Math.min(size.w, size.h)}px`,
+            height: `${Math.min(size.w, size.h)}px`,
             cursor: "grab",
-            contain: "layout paint size",
+            touchAction: "none",
           }}
         />
       </div>
