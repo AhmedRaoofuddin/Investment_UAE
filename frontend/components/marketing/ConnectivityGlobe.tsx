@@ -110,7 +110,7 @@ export function ConnectivityGlobe() {
       // stays visible on the smallest supported phones.
       const w = Math.max(0, el.clientWidth);
       if (w === 0) return;
-      const clamped = Math.max(300, Math.min(700, w));
+      const clamped = Math.max(300, Math.min(780, w));
       setSize({ w: clamped, h: clamped });
     });
     ro.observe(el);
@@ -133,14 +133,13 @@ export function ConnectivityGlobe() {
 
     const controls = g.controls();
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.3;
+    controls.autoRotateSpeed = 0.5;
     controls.enableZoom = false;
     controls.enablePan = false;
-    // Camera framed so the UAE is visible but a full hemisphere of
-    // destinations reads at once. Altitude 2.6 shows Europe, Africa,
-    // the Gulf and South Asia in a single frame without zooming in on
-    // the Arabian peninsula only.
-    g.pointOfView?.({ lat: 20, lng: 40, altitude: 2.6 }, 0);
+    // Camera centred on Dubai (lat 25.2, lng 55.3) so the UAE reads as
+    // the clear origin node. Altitude 2.2 keeps Europe, Africa, the
+    // Gulf and South Asia all in frame while the UAE stays prominent.
+    g.pointOfView?.({ lat: 25.2, lng: 55.3, altitude: 2.2 }, 0);
 
     let cloudsMesh: { rotation: { y: number } } | null = null;
     let raf = 0;
