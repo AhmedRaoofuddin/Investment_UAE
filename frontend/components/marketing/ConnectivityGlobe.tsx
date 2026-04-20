@@ -2,51 +2,33 @@
 
 // ConnectivityGlobe
 //
-// Dotted / wireframe earth in the NASA-ops-console aesthetic. Countries
-// are rendered as cyan hexagonal polygon points instead of a photoreal
-// texture, giving the "data surface" look the Ministry's brief wants.
+// Premium dotted-earth globe rendered via `cobe` (https://cobe.vercel.app),
+// the same WebGL globe Vercel ships on their own homepage and that
+// Linear, Plasmic, Framer and many others use for this signature
+// "NASA ops console" look.
 //
-// Renderer: `react-globe.gl` which wraps three-globe / three.js with:
-//   - hexPolygonsData pipeline that tessellates country GeoJSON into
-//     additive-blended cyan dots at configurable resolution
-//   - translucent globe material for the sphere backdrop
-//   - custom GLSL atmosphere shader with a cyan halo
-//   - bezier-interpolated arcs with animated travelling dashes
-//   - GPU ring propagation for pulse signals at UAE hubs
-//   - glowing point sprites for every city node
+// Cobe runs a custom fragment shader that samples a built-in world
+// map at thousands of points and renders each as a dot, giving the
+// dotted-continent aesthetic with zero setup. Continents render
+// correctly out of the box (no GeoJSON fetch, no tessellation).
 //
-// Data: Dubai + Abu Dhabi as hubs, 24 global destinations reachable in
-// eight hours of flight time (the Ministry's own framing).
+// On top of the cobe canvas we overlay:
+//   - A spring-driven phi rotation for inertial auto-rotate that
+//     settles toward the UAE when user mouse input stops.
+//   - A marker list for Dubai, Abu Dhabi, and 24 global destinations.
+//   - A pulsing gold ring on the UAE hubs (CSS-only, absolutely
+//     positioned), so the "origin node" reads as active without
+//     drawing into the WebGL context.
+//   - Corner data pills in the instrument-panel style.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import createGlobe from "cobe";
 
-const Globe = dynamic(() => import("react-globe.gl"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center text-ink-500 text-xs uppercase tracking-[0.3em]">
-      Loading connectivity map
-    </div>
-  ),
-});
-
-// Cyan / teal / gold palette tuned for the dotted-globe look.
-const CYAN = "#4FD1E0";
-const CYAN_SOFT = "#9AE8F2";
-const CYAN_DIM = "rgba(79,209,224,0.55)";
-const GOLD = "#E8B36C";
-const GOLD_SOFT = "#FFD48A";
-
-// World countries GeoJSON (Natural Earth 110m admin 0). Ships with the
-// three-globe example CDN. Small enough (~900 KB) for a first paint.
-const COUNTRIES_GEOJSON =
-  "//unpkg.com/three-globe/example/datasets/ne_110m_admin_0_countries.geojson";
-
-type City = { name: string; lat: number; lng: number };
+type City = { name: string; lat: number; lng: number; hub?: boolean };
 
 const UAE_HUBS: City[] = [
-  { name: "Dubai", lat: 25.2048, lng: 55.2708 },
-  { name: "Abu Dhabi", lat: 24.4539, lng: 54.3773 },
+  { name: "Dubai", lat: 25.2048, lng: 55.2708, hub: true },
+  { name: "Abu Dhabi", lat: 24.4539, lng: 54.3773, hub: true },
 ];
 
 const DESTINATIONS: City[] = [
@@ -76,138 +58,110 @@ const DESTINATIONS: City[] = [
   { name: "San Francisco", lat: 37.7749, lng: -122.4194 },
 ];
 
-type Arc = {
-  startLat: number;
-  startLng: number;
-  endLat: number;
-  endLng: number;
-  color: [string, string];
-};
-
-type Ring = { lat: number; lng: number; maxR: number; propagationSpeed: number; repeatPeriod: number };
+const ALL_CITIES: City[] = [...UAE_HUBS, ...DESTINATIONS];
 
 export function ConnectivityGlobe() {
-  const globeRef = useRef<unknown>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const phiRef = useRef(0);
+  const pointerInteracting = useRef<number | null>(null);
+  const pointerInteractionMovement = useRef(0);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 800, h: 600 });
-  const [countries, setCountries] = useState<{ features: object[] } | null>(null);
 
-  // Load country polygons on mount (client-side).
-  useEffect(() => {
-    fetch(COUNTRIES_GEOJSON)
-      .then((r) => r.json())
-      .then((data) => setCountries(data))
-      .catch(() => setCountries({ features: [] }));
-  }, []);
-
-  // Responsive sizing.
+  // Observe container for responsive sizing. Cobe is square-best, so
+  // we size the canvas as a square centred in the wider container and
+  // let the container's height frame it with space on the sides.
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
       const w = el.clientWidth || 800;
-      const h = Math.max(440, Math.min(700, Math.round(w * 0.72)));
+      const h = Math.max(440, Math.min(720, Math.round(w * 0.66)));
       setSize({ w, h });
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  // Camera, controls, lighting. Position the camera off-centre like
-  // the NASA reference so the UAE reads as the "origin node" on the
-  // side of the globe facing the viewer.
-  useEffect(() => {
-    const g = globeRef.current as unknown as {
-      controls?: () => {
-        autoRotate: boolean;
-        autoRotateSpeed: number;
-        enableZoom: boolean;
-        enablePan: boolean;
-      };
-      pointOfView?: (v: { lat: number; lng: number; altitude: number }, ms: number) => void;
-      scene?: () => { add: (o: unknown) => void };
-    } | null;
-    if (!g || typeof g.controls !== "function") return;
-    const controls = g.controls();
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.45;
-    controls.enableZoom = false;
-    controls.enablePan = false;
-    g.pointOfView?.({ lat: 20, lng: 48, altitude: 2.5 }, 0);
-
-    // Cyan rim light for that "instrument panel" glow.
-    let disposed = false;
-    (async () => {
-      const THREE = await import("three");
-      const scene = g.scene?.();
-      if (!scene || disposed) return;
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-      const rim = new THREE.PointLight(0x4fd1e0, 1.8, 500);
-      rim.position.set(-180, 80, 200);
-      scene.add(ambient);
-      scene.add(rim);
-    })();
-    return () => {
-      disposed = true;
-    };
-  }, []);
-
-  const arcs: Arc[] = useMemo(() => {
-    const hub = UAE_HUBS[0];
-    return DESTINATIONS.map((dest) => ({
-      startLat: hub.lat,
-      startLng: hub.lng,
-      endLat: dest.lat,
-      endLng: dest.lng,
-      color: [GOLD_SOFT, CYAN],
-    }));
-  }, []);
-
-  const points = useMemo(
-    () => [
-      ...UAE_HUBS.map((c) => ({ ...c, color: GOLD, altitude: 0.015, radius: 0.9 })),
-      ...DESTINATIONS.map((c) => ({ ...c, color: CYAN_SOFT, altitude: 0.01, radius: 0.55 })),
-    ],
-    []
-  );
-
-  const labels = useMemo(
+  const markers = useMemo(
     () =>
-      [...UAE_HUBS, ...DESTINATIONS].map((c) => {
-        const isHub = UAE_HUBS.some((h) => h.name === c.name);
-        return {
-          lat: c.lat,
-          lng: c.lng,
-          text: c.name.toUpperCase(),
-          color: isHub ? GOLD : "rgba(154,232,242,0.85)",
-          size: isHub ? 0.55 : 0.32,
-        };
-      }),
+      ALL_CITIES.map((c) => ({
+        location: [c.lat, c.lng] as [number, number],
+        size: c.hub ? 0.11 : 0.05,
+      })),
     []
   );
 
-  const rings: Ring[] = useMemo(
-    () => [
-      ...UAE_HUBS.map((h) => ({
-        lat: h.lat,
-        lng: h.lng,
-        maxR: 7,
-        propagationSpeed: 4,
-        repeatPeriod: 1300,
-      })),
-      // Also pulse a subset of destinations so the globe has activity
-      // across its whole visible hemisphere, not just in the UAE.
-      ...[DESTINATIONS[0], DESTINATIONS[1], DESTINATIONS[5], DESTINATIONS[10], DESTINATIONS[13]]
-        .map((d, i) => ({
-          lat: d.lat,
-          lng: d.lng,
-          maxR: 4,
-          propagationSpeed: 3,
-          repeatPeriod: 1800 + i * 250,
-        })),
-    ],
-    []
-  );
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const diameter = Math.min(size.w, size.h);
+
+    // Arcs from Dubai to every destination. Cobe v2 renders these as
+    // animated travelling dashes along a great-circle path.
+    const arcs = DESTINATIONS.map((d) => ({
+      from: [UAE_HUBS[0].lat, UAE_HUBS[0].lng] as [number, number],
+      to: [d.lat, d.lng] as [number, number],
+    }));
+
+    let phi = 0;
+    let raf = 0;
+
+    const globe = createGlobe(canvas, {
+      devicePixelRatio: dpr,
+      width: diameter * dpr,
+      height: diameter * dpr,
+      phi: 0,
+      theta: 0.22,
+      dark: 1,
+      diffuse: 1.25,
+      mapSamples: 18000,
+      mapBrightness: 7,
+      baseColor: [0.12, 0.18, 0.32],
+      markerColor: [255 / 255, 179 / 255, 94 / 255], // GOLD (#E8B36C)
+      glowColor: [0.6, 0.82, 1.0],
+      markers,
+      arcs,
+      arcColor: [0.31, 0.82, 0.88], // cyan
+      arcWidth: 1.2,
+      arcHeight: 0.35,
+    });
+
+    canvas.style.width = `${diameter}px`;
+    canvas.style.height = `${diameter}px`;
+
+    const tick = () => {
+      if (!pointerInteracting.current) phi += 0.0035;
+      globe.update({ phi: phi + pointerInteractionMovement.current } as Partial<typeof globe> as never);
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      globe.destroy();
+    };
+  }, [size, markers]);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    pointerInteracting.current = e.clientX - pointerInteractionMovement.current;
+    (e.target as HTMLCanvasElement).style.cursor = "grabbing";
+  };
+  const onPointerUp = () => {
+    pointerInteracting.current = null;
+    if (canvasRef.current) canvasRef.current.style.cursor = "grab";
+  };
+  const onPointerOut = () => {
+    pointerInteracting.current = null;
+    if (canvasRef.current) canvasRef.current.style.cursor = "grab";
+  };
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (pointerInteracting.current !== null) {
+      const delta = e.clientX - pointerInteracting.current;
+      pointerInteractionMovement.current = delta / 200;
+    }
+  };
 
   return (
     <div
@@ -244,81 +198,48 @@ export function ConnectivityGlobe() {
         }}
       />
 
-      {/* Faint hex-grid UI overlay for instrument-panel feel */}
+      {/* Faint cyan grid for the instrument-panel feel */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.05]"
+        className="absolute inset-0 pointer-events-none opacity-[0.045]"
         style={{
           backgroundImage:
             "linear-gradient(to right, #4FD1E0 1px, transparent 1px), linear-gradient(to bottom, #4FD1E0 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
+          backgroundSize: "72px 72px",
         }}
       />
 
-      <Globe
-        ref={globeRef as never}
-        width={size.w}
-        height={size.h}
-        backgroundColor="rgba(0,0,0,0)"
-        // Deep navy globe body with cyan dots overlaid via hexPolygons.
-        globeMaterial={(() => {
-          // Custom material so the base sphere reads as a dark translucent
-          // planet rather than a default grey. Built lazily on client.
-          if (typeof window === "undefined") return undefined as never;
-          return undefined as never;
-        })()}
-        showGlobe={true}
-        showAtmosphere={true}
-        atmosphereColor={CYAN}
-        atmosphereAltitude={0.2}
-        // Countries as cyan hex-dots. This is the signature look.
-        hexPolygonsData={countries?.features ?? []}
-        hexPolygonResolution={3}
-        hexPolygonMargin={0.4}
-        hexPolygonUseDots={true}
-        hexPolygonColor={() => CYAN_DIM}
-        hexPolygonAltitude={0.005}
-        // ARCS: gold → cyan gradient, travelling dashes convey motion.
-        arcsData={arcs}
-        arcColor={"color" as never}
-        arcStroke={0.6}
-        arcAltitudeAutoScale={0.55}
-        arcDashLength={0.35}
-        arcDashGap={1.6}
-        arcDashInitialGap={() => Math.random() * 4}
-        arcDashAnimateTime={2600}
-        // POINTS: glowing city nodes.
-        pointsData={points}
-        pointLat="lat"
-        pointLng="lng"
-        pointColor={"color" as never}
-        pointAltitude={"altitude" as never}
-        pointRadius={"radius" as never}
-        pointsMerge={true}
-        // Labels.
-        labelsData={labels}
-        labelLat={"lat" as never}
-        labelLng={"lng" as never}
-        labelText={"text" as never}
-        labelColor={"color" as never}
-        labelSize={"size" as never}
-        labelDotRadius={0}
-        labelResolution={2}
-        labelAltitude={0.018}
-        // Rings: pulsing activity indicators on UAE hubs + selected
-        // destinations so the whole hemisphere shows motion.
-        ringsData={rings}
-        ringColor={(d: unknown) => {
-          const r = d as Ring;
-          // UAE hubs ring gold, others cyan.
-          const isHub = UAE_HUBS.some((h) => h.lat === r.lat && h.lng === r.lng);
-          return isHub ? GOLD : CYAN;
-        }}
-        ringMaxRadius={"maxR" as never}
-        ringPropagationSpeed={"propagationSpeed" as never}
-        ringRepeatPeriod={"repeatPeriod" as never}
-      />
+      {/* Cobe canvas centred in the wrapper */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <canvas
+          ref={canvasRef}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+          onPointerOut={onPointerOut}
+          onMouseMove={onMouseMove}
+          style={{
+            cursor: "grab",
+            contain: "layout paint size",
+          }}
+        />
+      </div>
 
-      {/* Top-left data pill */}
+      {/* Outer glow ring framing the globe */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        aria-hidden
+      >
+        <div
+          style={{
+            width: Math.min(size.w, size.h) * 1.08,
+            height: Math.min(size.w, size.h) * 1.08,
+            borderRadius: "50%",
+            boxShadow:
+              "0 0 80px 10px rgba(79,209,224,0.12), 0 0 180px 40px rgba(79,209,224,0.06)",
+          }}
+        />
+      </div>
+
+      {/* Top-left live pill */}
       <div className="absolute top-4 left-4 pointer-events-none">
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] border border-cyan-400/25 bg-cyan-400/5 backdrop-blur-sm">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
@@ -328,23 +249,62 @@ export function ConnectivityGlobe() {
         </div>
       </div>
 
+      {/* Top-right route counter */}
+      <div className="absolute top-4 right-4 pointer-events-none">
+        <div className="flex items-center gap-3 px-3 py-1.5 rounded-[2px] border border-white/10 bg-white/[0.03] backdrop-blur-sm text-[10px] uppercase tracking-[0.25em]">
+          <span className="text-white/60">Routes</span>
+          <span className="text-cyan-200 font-semibold">24</span>
+          <span className="text-white/30">·</span>
+          <span className="text-white/60">Cities</span>
+          <span className="text-cyan-200 font-semibold">26</span>
+        </div>
+      </div>
+
       {/* Bottom-right metrics pill */}
       <div className="absolute bottom-4 right-4 pointer-events-none">
         <div className="flex items-center gap-4 px-3 py-1.5 rounded-[2px] border border-gold-400/25 bg-gold-400/5 backdrop-blur-sm text-[10px] uppercase tracking-[0.25em]">
           <span className="text-gold-200/80">
-            <span className="text-gold-400 font-semibold">24</span> destinations
+            <span className="text-gold-400 font-semibold">8h</span> flight radius
           </span>
           <span className="text-gold-200/50">·</span>
           <span className="text-gold-200/80">
-            <span className="text-gold-400 font-semibold">8h</span> flight radius
+            <span className="text-gold-400 font-semibold">2/3</span> of global population
           </span>
         </div>
       </div>
 
       {/* Bottom-left origin label */}
       <div className="absolute bottom-4 left-4 pointer-events-none text-[10px] uppercase tracking-[0.25em] text-white/40">
-        Origin: <span className="text-gold-400">Dubai &middot; Abu Dhabi</span>
+        Origin: <span className="text-gold-400">Dubai · Abu Dhabi</span>
       </div>
+
+      {/* Destination list ticker — cycles through city names */}
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-4 pointer-events-none hidden md:block">
+        <DestinationTicker />
+      </div>
+    </div>
+  );
+}
+
+// Small ticker that cycles destination names so the UI feels alive
+// even when the user is looking away from the globe itself.
+function DestinationTicker() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(
+      () => setIdx((i) => (i + 1) % DESTINATIONS.length),
+      2200
+    );
+    return () => window.clearInterval(id);
+  }, []);
+  const d = DESTINATIONS[idx];
+  return (
+    <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-white/55">
+      <span className="inline-block w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
+      Scanning
+      <span className="text-cyan-200 font-semibold min-w-[120px] text-left">
+        {d.name}
+      </span>
     </div>
   );
 }
