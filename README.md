@@ -63,6 +63,91 @@ compelling investment destination for all.
 
 ---
 
+## Tech stack
+
+<table>
+  <tr>
+    <th align="left" width="18%">Layer</th>
+    <th align="left">Stack</th>
+  </tr>
+  <tr>
+    <td><strong>Frontend</strong></td>
+    <td>
+      <img src="https://img.shields.io/badge/Next.js-16.2-0E1E3F?style=flat-square&logo=nextdotjs&logoColor=white&labelColor=0E1E3F" alt="Next.js 16.2" />
+      <img src="https://img.shields.io/badge/React-19-1B4F72?style=flat-square&logo=react&logoColor=white&labelColor=0E1E3F" alt="React 19" />
+      <img src="https://img.shields.io/badge/TypeScript-5-1B4F72?style=flat-square&logo=typescript&logoColor=white&labelColor=0E1E3F" alt="TypeScript 5" />
+      <img src="https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=0E1E3F" alt="Tailwind 4" />
+      <img src="https://img.shields.io/badge/Framer%20Motion-12-FF4785?style=flat-square&logo=framer&logoColor=white&labelColor=0E1E3F" alt="Framer Motion 12" />
+      <img src="https://img.shields.io/badge/Recharts-3-22C55E?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="Recharts 3" />
+      <img src="https://img.shields.io/badge/Leaflet-1.9-199900?style=flat-square&logo=leaflet&logoColor=white&labelColor=0E1E3F" alt="Leaflet 1.9" />
+      <br /><sub>Next.js App Router, RSC-first, full EN + AR i18n with RTL, dictionary-driven strings.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Backend</strong></td>
+    <td>
+      <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi&logoColor=white&labelColor=0E1E3F" alt="FastAPI 0.115" />
+      <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white&labelColor=0E1E3F" alt="Python 3.12" />
+      <img src="https://img.shields.io/badge/Uvicorn-0.30-1B4F72?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="Uvicorn" />
+      <img src="https://img.shields.io/badge/Pydantic-v2-E92063?style=flat-square&logo=pydantic&logoColor=white&labelColor=0E1E3F" alt="Pydantic v2" />
+      <img src="https://img.shields.io/badge/httpx-async-1B4F72?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="httpx async" />
+      <img src="https://img.shields.io/badge/feedparser-6-B6925E?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="feedparser 6" />
+      <br /><sub>Async fan-out RSS aggregator, 6-stage signal pipeline, disk-backed snapshot cache.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>AI &amp; ML</strong></td>
+    <td>
+      <img src="https://img.shields.io/badge/Anthropic-Claude%20Opus%20%2B%20Haiku-D97706?style=flat-square&logo=anthropic&logoColor=white&labelColor=0E1E3F" alt="Anthropic Claude" />
+      <img src="https://img.shields.io/badge/sentence--transformers-MiniLM-FFCB05?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="sentence-transformers" />
+      <img src="https://img.shields.io/badge/rapidfuzz-3-1B4F72?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="rapidfuzz 3" />
+      <img src="https://img.shields.io/badge/Jupyter-demos-F37626?style=flat-square&logo=jupyter&logoColor=white&labelColor=0E1E3F" alt="Jupyter demos" />
+      <br /><sub>5 open-source agents (embedding, classifier, entity, scoring, orchestrator) with deterministic fallbacks. Anthropic is an optional enhancement layer.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Data</strong></td>
+    <td>
+      <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white&labelColor=0E1E3F" alt="PostgreSQL 16" />
+      <img src="https://img.shields.io/badge/Neon-eu--central--1-00E699?style=flat-square&logo=neon&logoColor=white&labelColor=0E1E3F" alt="Neon eu-central-1" />
+      <img src="https://img.shields.io/badge/Prisma-6-2D3748?style=flat-square&logo=prisma&logoColor=white&labelColor=0E1E3F" alt="Prisma 6" />
+      <br /><sub>Multi-tenant schema, branched Postgres, migrations applied at build time via <code>prisma migrate deploy</code>.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Auth &amp; security</strong></td>
+    <td>
+      <img src="https://img.shields.io/badge/Auth.js-v5-000000?style=flat-square&logo=auth0&logoColor=white&labelColor=0E1E3F" alt="Auth.js v5" />
+      <img src="https://img.shields.io/badge/bcrypt-12%20rounds-1B4F72?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="bcrypt 12 rounds" />
+      <img src="https://img.shields.io/badge/AES--256--GCM-per--tenant%20DEK-7B2D8E?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="AES-256-GCM" />
+      <img src="https://img.shields.io/badge/HSTS-preload-1B4F72?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="HSTS preload" />
+      <img src="https://img.shields.io/badge/Trusted%20Types-on-B6925E?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="Trusted Types on" />
+      <br /><sub>JWT sessions, HttpOnly cookies, token-bucket rate limiting per route, append-only audit log aligned to PDPL Article 23.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Infrastructure</strong></td>
+    <td>
+      <img src="https://img.shields.io/badge/Vercel-Edge%20%2B%20Serverless-000000?style=flat-square&logo=vercel&logoColor=white&labelColor=0E1E3F" alt="Vercel Edge + Serverless" />
+      <img src="https://img.shields.io/badge/Region-fra1%20Frankfurt-1B4F72?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="Region fra1 Frankfurt" />
+      <img src="https://img.shields.io/badge/Node-22.x-339933?style=flat-square&logo=nodedotjs&logoColor=white&labelColor=0E1E3F" alt="Node 22" />
+      <br /><sub>Next.js on Vercel Edge + Serverless, FastAPI on Vercel Python runtime, both in fra1. UAE-sovereign migration path documented.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Quality</strong></td>
+    <td>
+      <img src="https://img.shields.io/badge/pytest-181%20tests-0A9EDC?style=flat-square&logo=pytest&logoColor=white&labelColor=0E1E3F" alt="pytest 181 tests" />
+      <img src="https://img.shields.io/badge/GitHub%20Actions-CI-2088FF?style=flat-square&logo=githubactions&logoColor=white&labelColor=0E1E3F" alt="GitHub Actions CI" />
+      <img src="https://img.shields.io/badge/gitleaks-secrets%20scan-B6925E?style=flat-square&logoColor=white&labelColor=0E1E3F" alt="gitleaks" />
+      <img src="https://img.shields.io/badge/tsc-strict-1B4F72?style=flat-square&logo=typescript&logoColor=white&labelColor=0E1E3F" alt="tsc strict" />
+      <br /><sub>Deterministic offline test suite runs end-to-end in under one second. Every push gates on pytest, <code>tsc --noEmit</code>, and gitleaks.</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## The case study
 
 <table>
