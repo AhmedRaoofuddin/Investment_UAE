@@ -110,7 +110,7 @@ export function ConnectivityGlobe() {
       // stays visible on the smallest supported phones.
       const w = Math.max(0, el.clientWidth);
       if (w === 0) return;
-      const clamped = Math.max(300, Math.min(620, w));
+      const clamped = Math.max(300, Math.min(700, w));
       setSize({ w: clamped, h: clamped });
     });
     ro.observe(el);
