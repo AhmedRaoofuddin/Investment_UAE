@@ -22,6 +22,7 @@ export type AuditAction =
   | "connection.revoked"
   | "connector.saved"
   | "connector.revoked"
+  | "connector.validation_failed"
   | "watchlist.added"
   | "watchlist.removed"
   | "notification.sent"

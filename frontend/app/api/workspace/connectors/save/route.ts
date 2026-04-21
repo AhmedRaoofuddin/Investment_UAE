@@ -7,17 +7,21 @@
 //   `Connection.config` for read-back in the UI.
 // - `connectorId` must resolve to an entry in CONNECTORS; unknown ids are
 //   rejected with 400 to guard against spoofed providers.
-// - We do NOT verify the webhook URL / API key here — providers differ
-//   too wildly (GET vs POST, Slack's challenge/response, etc.). The
-//   first pipeline dispatch is the real validation; failures surface as
-//   `Connection.lastError` and `status = ERROR` on the row.
+// - Credentials pass through `validateConnector` (lib/connections/validators)
+//   which runs a per-vendor shape check and a 5-second live handshake
+//   against the target API. Saves only succeed when both pass — a paste
+//   like `https://metaforgeportal.com/` fails at the shape layer before
+//   touching the DB or the encryption layer.
 //
-// All writes are audited via `audit({action:"connector.saved"})`.
+// Failed validations are audited as `connector.validation_failed` so a
+// burst of bad pastes is forensically visible (PDPL Art. 23 alignment).
+// Successful saves are audited as `connector.saved`.
 
 import { NextResponse } from "next/server";
 import { audit } from "@/lib/audit";
 import { db, isDbConfigured } from "@/lib/db";
 import { getConnector } from "@/lib/connections/catalogue";
+import { validateConnector } from "@/lib/connections/validators";
 import { sealSecret } from "@/lib/security/encryption";
 import { requireSession } from "@/lib/security/session";
 
@@ -94,6 +98,33 @@ export async function POST(request: Request) {
   if (invalidUrls.length > 0) {
     return NextResponse.json(
       { error: "invalid_url_fields", fields: invalidUrls },
+      { status: 400 },
+    );
+  }
+
+  // Per-vendor validation: shape (regex/hostname) followed by a live
+  // handshake against the target API. Guards against random pastes and
+  // revoked credentials before we seal anything.
+  const validation = await validateConnector(spec.id, body.fields, { isUpdate });
+  if (!validation.ok) {
+    audit({
+      action: "connector.validation_failed",
+      tenantId: session.tenantId,
+      userId: session.userId,
+      subject: spec.id,
+      meta: {
+        stage: validation.stage,
+        field: validation.field,
+      },
+    });
+    return NextResponse.json(
+      {
+        error: "validation_failed",
+        stage: validation.stage,
+        field: validation.field,
+        detail: validation.detail,
+        expected: validation.expected,
+      },
       { status: 400 },
     );
   }

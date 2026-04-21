@@ -282,9 +282,19 @@ function ConnectorModal({
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const [errorExpected, setErrorExpected] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const isUpdate = !!existing;
+
+  function clearErrorState() {
+    setError(null);
+    setErrorDetail(null);
+    setErrorExpected(null);
+    setErrorField(null);
+  }
 
   function validateFields(): string | null {
     // Required check — for updates, secret fields are optional (keep existing).
@@ -315,9 +325,9 @@ function ConnectorModal({
 
   async function handleSave() {
     const validationErr = validateFields();
+    clearErrorState();
     if (validationErr) { setError(validationErr); return; }
     setSubmitting(true);
-    setError(null);
     try {
       const r = await fetch("/api/workspace/connectors/save", {
         method: "POST",
@@ -326,13 +336,33 @@ function ConnectorModal({
       });
       const data = await r.json();
       if (!r.ok || !data.ok) {
-        setError(
-          data.error === "missing_required_fields"
-            ? t("workspace.connectors.errMissing", "Please fill the required fields.")
-            : data.error === "invalid_url_fields"
-              ? t("workspace.connectors.errInvalidUrl", "One or more URL fields must be a valid HTTPS address (must start with https://).")
-              : data.error ?? t("workspace.connectors.errGeneric", "Something went wrong. Try again."),
-        );
+        if (data.error === "missing_required_fields") {
+          setError(t("workspace.connectors.errMissing", "Please fill the required fields."));
+        } else if (data.error === "invalid_url_fields") {
+          setError(
+            t(
+              "workspace.connectors.errInvalidUrl",
+              "One or more URL fields must be a valid HTTPS address (must start with https://).",
+            ),
+          );
+        } else if (data.error === "validation_failed") {
+          const headline =
+            data.stage === "shape"
+              ? t(
+                  "workspace.connectors.validationFailedShape",
+                  "This doesn't look like a valid credential for this connector.",
+                )
+              : t(
+                  "workspace.connectors.validationFailedHandshake",
+                  "The vendor rejected the test request. The credential is unreachable or invalid.",
+                );
+          setError(headline);
+          setErrorDetail(typeof data.detail === "string" ? data.detail : null);
+          setErrorExpected(typeof data.expected === "string" ? data.expected : null);
+          setErrorField(typeof data.field === "string" ? data.field : null);
+        } else {
+          setError(data.error ?? t("workspace.connectors.errGeneric", "Something went wrong. Try again."));
+        }
         return;
       }
       setSuccess(true);
@@ -482,8 +512,25 @@ function ConnectorModal({
           </div>
 
           {error && (
-            <div className="mt-4 p-3 rounded-[3px] border border-red-200 bg-red-50 text-xs text-red-900">
-              {error}
+            <div className="mt-4 p-3 rounded-[3px] border border-red-200 bg-red-50 text-xs text-red-900 space-y-1.5">
+              <div className="font-semibold">{error}</div>
+              {errorField && (
+                <div className="text-[11px] text-red-800">
+                  {t("workspace.connectors.errFieldLabel", "Field")}:{" "}
+                  <code className="font-mono" dir="ltr">{errorField}</code>
+                </div>
+              )}
+              {errorDetail && (
+                <div className="text-[11px] text-red-800 leading-relaxed" dir="ltr">
+                  {errorDetail}
+                </div>
+              )}
+              {errorExpected && (
+                <div className="text-[11px] text-red-800">
+                  {t("workspace.connectors.expectedLabel", "Expected format")}:{" "}
+                  <code className="font-mono break-all" dir="ltr">{errorExpected}</code>
+                </div>
+              )}
             </div>
           )}
           {success && (
@@ -519,7 +566,7 @@ function ConnectorModal({
                 className="px-4 h-9 rounded-[3px] bg-gold-500 text-navy-900 text-xs font-semibold hover:bg-gold-400 disabled:opacity-50"
               >
                 {submitting
-                  ? t("workspace.connectors.saving", "Saving…")
+                  ? t("workspace.connectors.validating", "Testing connection…")
                   : existing
                     ? t("workspace.connectors.update", "Update")
                     : t("workspace.connectors.saveConnect", "Save & connect")}
